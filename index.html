@@ -227,7 +227,8 @@
     set,
     get,
     onValue,
-    push
+    push,
+    transaction
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
@@ -463,27 +464,78 @@
       .disabled = true;
 
 
-    const answerRef =
-      push(ref(
-        db,
-        "answers/" + currentQuestion
-      ));
+   const answerRef =
+  push(ref(
+    db,
+    "answers/" + currentQuestion
+  ));
+
+await set(answerRef, {
+
+  playerId: playerId,
+
+  name: playerName,
+
+  time: Date.now()
+
+});
 
 
-    await set(answerRef, {
+// 첫 번째 정답자를 확인하고 점수 +1
+const winnerRef =
+  ref(
+    db,
+    "winners/" + currentQuestion
+  );
 
-      playerId: playerId,
+const result =
+  await transaction(
+    winnerRef,
+    currentWinner => {
 
-      name: playerName,
+      // 아직 아무도 정답을 맞히지 않았다면
+      if (currentWinner === null) {
 
-      time: Date.now()
+        return {
+          playerId: playerId,
+          name: playerName,
+          time: Date.now()
+        };
 
-    });
+      }
+
+      // 이미 다른 사람이 정답을 맞혔다면
+      return;
+
+    }
+  );
 
 
-    document.getElementById("submitMessage")
-      .innerText =
-      "⭕ 정답! 결과를 기다려주세요.";
+// 내가 첫 번째 정답자라면
+if (result.committed) {
+
+  const playerRef =
+    ref(
+      db,
+      "players/" + playerId + "/score"
+    );
+
+  await transaction(
+    playerRef,
+    score => (score || 0) + 1
+  );
+
+  document.getElementById("submitMessage")
+    .innerText =
+    "🏆 정답! 가장 먼저 맞혔어요! +1점";
+
+} else {
+
+  document.getElementById("submitMessage")
+    .innerText =
+    "⭕ 정답! 하지만 조금 늦었어요.";
+
+}
 
   };
 
