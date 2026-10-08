@@ -674,14 +674,13 @@ if (result.committed) {
 
   // 호스트 모드
   // 주소 뒤에 ?host 를 붙이면 진행자 화면
-  if (
-    window.location.search === "?host"
-  ) {
+ if (
+  window.location.search.includes("host")
+) {
 
-    hostMode();
+  hostMode();
 
-  }
-
+}
 </script>
 
 </body>
