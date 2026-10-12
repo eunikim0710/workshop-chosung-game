@@ -285,19 +285,33 @@ if(cell && choices[qIndex]===relay.currentAnswer){
  $("nextButton").disabled=finished;
  $("nextButton").textContent=finished?"게임 종료":"다음 릴레이 진행";
 }
+
 async function startRelay(){
- const playerEntries=Object.entries(players).filter(([uid,p])=>p.submitted&&answers[uid]?.choices?.length===25);
- if(!playerEntries.length)throw new Error("제출을 완료한 참가자가 없습니다.");
- const first=randomItem(playerEntries);
- await set(ref(db,"game/relay"),{
-  started:true,finished:false,questionIndex:0,currentUid:first[0],
-  visited:[],
-currentAnswer:answers[first[0]].choices[0],
-moveMessage:"첫 주자가 무작위로 정해졌어요!",
-updatedAt:Date.now()
- });
- await set(ref(db,"game/status"),"started");
+  const playerEntries = Object.entries(players).filter(
+    ([uid, p]) => p.submitted && answers[uid]?.choices?.length === 25
+  );
+
+  if (!playerEntries.length) {
+    throw new Error("제출을 완료한 참가자가 없습니다.");
+  }
+
+  const first = randomItem(playerEntries);
+
+  await set(ref(db, "game/relay"), {
+    started: true,
+    finished: false,
+    questionIndex: null,
+    currentUid: first[0],
+    currentAnswer: null,
+    visited: [],
+    usedQuestions: [],
+    moveMessage: "첫 주자가 정해졌어요. 해당 참가자가 질문을 선택해 주세요!",
+    updatedAt: Date.now()
+  });
+
+  await set(ref(db, "game/status"), "started");
 }
+
   async function resetGame(){
   if(!confirm("참가자 답변은 유지하고 게임만 처음부터 다시 시작할까요?")) return;
 
