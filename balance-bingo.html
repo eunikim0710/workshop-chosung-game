@@ -407,6 +407,14 @@ async function startApp(){
     catch(e){errorMessage("hostMessage",e);}
     finally{$("nextButton").disabled=false;}
    });
+    $("resetButton").addEventListener("click",async()=>{
+  try{
+    await resetGame();
+  }catch(e){
+    console.error(e);
+    alert("초기화에 실패했어요. 다시 시도해 주세요.");
+  }
+});
    return;
   }
 
