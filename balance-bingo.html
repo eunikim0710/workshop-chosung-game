@@ -253,6 +253,59 @@ function questionText(index){
  return index>=0&&index<25?`${index+1}. ${questions[index][0]} vs ${questions[index][1]}`:"";
 }
 
+function renderPlayerQuestionChoices(relay){
+  const area = $("playerQuestionChoices");
+  if(!area) return;
+
+  area.replaceChildren();
+
+  const used = Array.isArray(relay.usedQuestions)
+    ? relay.usedQuestions
+    : [];
+
+  questions.forEach((question, index) => {
+    if(used.includes(index)) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "question-choice";
+    button.textContent = questionText(index);
+
+    button.addEventListener("click", async () => {
+      if(!user || relay.currentUid !== user.uid) return;
+
+      const buttons = area.querySelectorAll("button");
+      buttons.forEach(item => item.disabled = true);
+
+      button.textContent = "선택 요청 중...";
+
+      try {
+        await set(
+          ref(db, "game/questionRequests/" + user.uid),
+          {
+            questionIndex: index,
+            requestId: Date.now()
+          }
+        );
+
+        button.textContent = "선택 완료! 진행을 기다려 주세요.";
+      } catch(error) {
+        console.error(error);
+        alert("질문 선택에 실패했어요. 다시 시도해 주세요.");
+        renderPlayerQuestionChoices(relay);
+      }
+    });
+
+    area.appendChild(button);
+  });
+
+  if(area.children.length === 0){
+    const message = document.createElement("p");
+    message.textContent = "선택할 수 있는 질문이 없어요.";
+    area.appendChild(message);
+  }
+}
+
 function renderRelay(relay){
   if(!relay) return;
 
