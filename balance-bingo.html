@@ -2,447 +2,354 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>밸런스 릴레이 빙고</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 16px;
-      font-family: Arial, sans-serif;
-      background: #f4f5fb;
-      color: #252842;
-    }
-    .container {
-      max-width: 650px;
-      margin: 20px auto;
-      padding: 22px 16px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 30px #0000000d;
-    }
-    h1 { font-size: 25px; text-align: center; }
-    h2 { font-size: 20px; }
-    .description {
-      color: #70758a;
-      line-height: 1.7;
-      text-align: center;
-    }
-    input {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #d9dce8;
-      border-radius: 10px;
-      font-size: 16px;
-      margin-bottom: 12px;
-    }
-    button {
-      padding: 12px;
-      border: 0;
-      border-radius: 10px;
-      background: #6965dc;
-      color: white;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
-    .main-button { width: 100%; margin-top: 14px; }
-    .hidden { display: none !important; }
-    .notice {
-      padding: 13px;
-      margin-top: 15px;
-      background: #f1f0ff;
-      border-radius: 10px;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    #message, #questionMessage {
-      margin-top: 12px;
-      color: #b42336;
-      font-size: 14px;
-    }
-    .question-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .question-card {
-      min-width: 0;
-      padding: 11px;
-      border: 1px solid #e0e2ed;
-      border-radius: 13px;
-      background: #fff;
-    }
-    .question-title {
-      min-height: 43px;
-      font-size: 14px;
-      font-weight: bold;
-      line-height: 1.5;
-      margin-bottom: 9px;
-    }
-    .choices { display: grid; gap: 6px; }
-    .choice {
-      width: 100%;
-      padding: 9px 7px;
-      color: #383957;
-      background: #f3f4f9;
-      border: 1px solid #e0e2ed;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
-    }
-    .choice.selected {
-      background: #6965dc;
-      color: white;
-      border-color: #6965dc;
-    }
-    .counter {
-      text-align: center;
-      font-weight: bold;
-      margin: 15px 0;
-    }
-    .player-row {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    @media (max-width: 360px) {
-      .question-grid { gap: 6px; }
-      .question-card { padding: 8px; }
-      .question-title { font-size: 13px; }
-      .choice { font-size: 12px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>밸런스 릴레이 빙고</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:14px;font-family:Arial,sans-serif;background:#f4f5fb;color:#252842}
+.container{max-width:700px;margin:12px auto;padding:20px 14px;background:white;border-radius:18px}
+h1{text-align:center;font-size:24px}
+h2{font-size:19px}
+.description{text-align:center;color:#70758a;line-height:1.6}
+input,button{font-size:15px;border-radius:10px;padding:12px}
+input{width:100%;border:1px solid #d9dce8;margin:8px 0}
+button{border:0;background:#6965dc;color:white;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.45}
+.main-button{width:100%;margin:12px 0}
+.hidden{display:none!important}
+.notice{background:#f1f0ff;padding:13px;border-radius:10px;margin:12px 0;line-height:1.6}
+.question-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.question-card{border:1px solid #e0e2ed;border-radius:12px;padding:10px;min-width:0}
+.question-title{font-size:14px;font-weight:bold;line-height:1.5;margin-bottom:8px}
+.choices{display:grid;gap:6px}
+.choice{width:100%;background:#f3f4f9;color:#383957;border:1px solid #e0e2ed;overflow-wrap:anywhere;line-height:1.4}
+.choice.selected{background:#6965dc;color:white}
+.counter{text-align:center;font-weight:bold;margin:14px 0}
+.player-row{padding:10px;border-bottom:1px solid #eee;font-size:14px}
+.relay-card{padding:16px;background:#f1f0ff;border-radius:14px;margin:12px 0;text-align:center;line-height:1.7}
+.relay-answer{font-size:20px;font-weight:bold}
+@media(max-width:360px){.question-grid{gap:6px}.question-card{padding:7px}.question-title{font-size:12px}.choice{font-size:12px;padding:8px 4px}}
+</style>
 </head>
 <body>
 <main class="container">
+<section id="joinScreen">
+<h1>🎯 밸런스 릴레이 빙고</h1>
+<p class="description">이름을 입력하고 25개 질문에 답해 주세요!</p>
+<input id="playerName" maxlength="12" placeholder="이름을 입력해 주세요" autocomplete="off">
+<button id="joinButton" class="main-button">게임 참가하기</button>
+<div id="message" role="alert"></div>
+</section>
 
-  <section id="joinScreen">
-    <h1>🎯 밸런스 릴레이 빙고</h1>
-    <p class="description">
-      25개 질문에 답을 선택하고<br>
-      진행자의 게임 시작을 기다려 주세요!
-    </p>
-    <input id="playerName" maxlength="12"
-      placeholder="이름을 입력해 주세요" autocomplete="off">
-    <button id="joinButton" class="main-button">게임 참가하기</button>
-    <div id="message" role="alert"></div>
-  </section>
+<section id="questionScreen" class="hidden">
+<h1>🎯 밸런스 릴레이 빙고</h1>
+<p id="welcomeName" class="counter"></p>
+<p class="description">각 질문에서 A 또는 B를 선택해 주세요.</p>
+<div id="questionCounter" class="counter">선택 0 / 25</div>
+<div id="questionGrid" class="question-grid"></div>
+<button id="submitButton" class="main-button" disabled>답변 제출하기</button>
+<div id="questionMessage"></div>
+</section>
 
-  <section id="questionScreen" class="hidden">
-    <h1>🎯 밸런스 릴레이 빙고</h1>
-    <p class="description">
-      각 질문에서 A 또는 B를 선택해 주세요.
-    </p>
-    <div id="welcomeName" class="counter"></div>
-    <div id="questionCounter" class="counter">선택 0 / 25</div>
-    <div id="questionGrid" class="question-grid"></div>
-    <button id="submitButton" class="main-button" disabled>
-      답변 제출하기
-    </button>
-    <div id="questionMessage" role="status"></div>
-  </section>
+<section id="waitingScreen" class="hidden">
+<h1>🙌 제출 완료!</h1>
+<p id="waitingText" class="description">진행자가 게임을 시작할 때까지 기다려 주세요.</p>
+<div id="playerRelay" class="hidden">
+<div class="relay-card">
+<div id="playerRelayStatus">릴레이 준비 중</div>
+<h2 id="playerRelayQuestion"></h2>
+<div id="playerRelayAnswer" class="relay-answer"></div>
+<p id="playerRelayDetail"></p>
+</div>
+</div>
+</section>
 
-  <section id="waitingScreen" class="hidden">
-    <h1>🙌 제출 완료!</h1>
-    <p class="description" id="waitingText">
-      진행자가 게임을 시작할 때까지 기다려 주세요.
-    </p>
-  </section>
-
-  <section id="hostScreen" class="hidden">
-    <h1>🎯 진행자 화면</h1>
-    <p class="description">
-      참가자들의 제출 현황을 확인할 수 있어요.
-    </p>
-    
-    <h2>참가 현황</h2>
-    <p id="hostCount">참가 현황을 불러오는 중...</p>
-    <div id="playerList"></div>
-    <button id="startButton" class="main-button">
-      게임 시작하기
-    </button>
-    <div id="hostMessage" class="notice" role="status">
-      데이터베이스 규칙을 설정한 후 사용할 수 있어요.
-    </div>
-    <section id="revealedAnswers" class="hidden">
-      <h2>제출된 답변</h2>
-      <p class="description">
-        게임 시작 후에만 답변을 확인할 수 있어요.
-      </p>
-      <div id="answerList"></div>
-    </section>
-  </section>
-
+<section id="hostScreen" class="hidden">
+<h1>🎯 진행자 화면</h1>
+<p class="description">참가 현황을 확인하고 게임을 진행해 주세요.</p>
+<h2>참가 현황</h2>
+<p id="hostCount">불러오는 중...</p>
+<div id="playerList"></div>
+<button id="startButton" class="main-button">게임 시작하기</button>
+<div id="hostMessage" class="notice" role="status">참가자 답변 제출을 기다리고 있어요.</div>
+<section id="hostRelay" class="hidden">
+<div class="relay-card">
+<div id="hostRelayStatus">릴레이 진행 중</div>
+<h2 id="hostRelayQuestion"></h2>
+<div id="hostRelayAnswer" class="relay-answer"></div>
+<p id="hostRelayDetail"></p>
+</div>
+<button id="nextButton" class="main-button">다음 릴레이 진행</button>
+</section>
+<section id="revealedAnswers" class="hidden">
+<h2>제출된 답변</h2>
+<div id="answerList"></div>
+</section>
+</section>
 </main>
 
 <script type="module">
-  import { initializeApp } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getDatabase,ref,set,update,onValue,get} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  import {
-    getDatabase, ref, set, update, onValue
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig={
+ apiKey:"AIzaSyByHNWVZ0ymrspwOgoG6q2XgXPpPqvRBBc",
+ authDomain:"balance-relay-bingo.firebaseapp.com",
+ databaseURL:"https://balance-relay-bingo-default-rtdb.asia-southeast1.firebasedatabase.app",
+ projectId:"balance-relay-bingo",
+ storageBucket:"balance-relay-bingo.firebasestorage.app",
+ messagingSenderId:"1088440127318",
+ appId:"1:1088440127318:web:f84331bd766a9957a6d0f7"
+};
 
-  import {
-    getAuth, signInAnonymously
-  } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const HOST_UID="Av0Ee2CTFZctcg9KbqKIBB8nC8n2";
+const questions=[
+["🍚 밥","🥖 빵"],["🌊 바다","🏔️ 산"],["☀️ 여름","❄️ 겨울"],
+["🏠 집콕","🚗 외출"],["🎬 영화관","📺 집에서 영화 보기"],
+["📱 전화","💬 문자"],["💰 지금 100만 원 받기","🎰 50% 확률로 300만 원 받기"],
+["🍳 반숙 계란","🥚 완숙 계란"],["⏰ 알람 한 번에 기상","⏰ 여러 번 알람"],
+["🪟 창가 자리","🚪 출입문 가까운 자리"],["🍗 뼈 있는 치킨","🍗 순살 치킨"],
+["🍜 라면에 계란 넣기","🥚 계란 없이 먹기"],["🍕 끝부분까지 먹기","🧀 끝부분 남기기"],
+["🍫 단짠 조합","🌶️ 맵단 조합"],["🍳 좋아하는 음식 먼저 먹기","🍳 마지막에 먹기"],
+["🛏️ 주말 늦잠 자기","🌄 평소처럼 일찍 일어나기"],["🚿 샤워 먼저","🪥 양치 먼저"],
+["📺 드라마 몰아보기","📅 매주 한 편씩 보기"],
+["🛍️ 필요한 것만 사기","🛒 구경하다 충동구매"],
+["🧳 여행 짐 미리 싸기","🧳 출발 전날 몰아서 싸기"],
+["🧊 에어컨 강하게 틀기","🌬️ 선풍기로 버티기"],
+["🧠 고민 생기면 바로 말하기","🤔 혼자 생각한 뒤 말하기"],
+["💬 메시지 오면 바로 답장","💬 여유 있을 때 답장"],
+["🎁 원하는 선물을 정확히 받기","🎉 예상 못 한 깜짝 선물 받기"],
+["🔮 미래를 미리 알기","🔄 과거의 선택 한 번 바꾸기"]
+];
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyByHNWVZ0ymrspwOgoG6q2XgXPpPqvRBBc",
-    authDomain: "balance-relay-bingo.firebaseapp.com",
-    databaseURL: "https://balance-relay-bingo-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "balance-relay-bingo",
-    storageBucket: "balance-relay-bingo.firebasestorage.app",
-    messagingSenderId: "1088440127318",
-    appId: "1:1088440127318:web:f84331bd766a9957a6d0f7"
-  };
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const auth=getAuth(app);
+const isHost=new URLSearchParams(location.search).has("host");
+const $=id=>document.getElementById(id);
+let user=null,playerName="",choices=Array(25).fill(null),submitted=false;
+let players={},answers={},relayListenerStarted=false;
 
-  const questions = [
-    ["🍚 밥", "🥖 빵"],
-    ["🌊 바다", "🏔️ 산"],
-    ["☀️ 여름", "❄️ 겨울"],
-    ["🏠 집콕", "🚗 외출"],
-    ["🎬 영화관", "📺 집에서 영화 보기"],
-    ["📱 전화", "💬 문자"],
-    ["💰 지금 100만 원 받기", "🎰 50% 확률로 300만 원 받기"],
-    ["🍳 반숙 계란", "🥚 완숙 계란"],
-    ["⏰ 알람 한 번에 기상", "⏰ 여러 번 알람"],
-    ["🪟 창가 자리", "🚪 출입문 가까운 자리"],
-    ["🍗 뼈 있는 치킨", "🍗 순살 치킨"],
-    ["🍜 라면에 계란 넣기", "🥚 계란 없이 먹기"],
-    ["🍕 끝부분까지 먹기", "🧀 끝부분 남기기"],
-    ["🍫 단짠 조합", "🌶️ 맵단 조합"],
-    ["🍳 좋아하는 음식 먼저 먹기", "🍳 마지막에 먹기"],
-    ["🛏️ 주말 늦잠 자기", "🌄 평소처럼 일찍 일어나기"],
-    ["🚿 샤워 먼저", "🪥 양치 먼저"],
-    ["📺 드라마 몰아보기", "📅 매주 한 편씩 보기"],
-    ["🛍️ 필요한 것만 사기", "🛒 구경하다 충동구매"],
-    ["🧳 여행 짐 미리 싸기", "🧳 출발 전날 몰아서 싸기"],
-    ["🧊 에어컨 강하게 틀기", "🌬️ 선풍기로 버티기"],
-    ["🧠 고민 생기면 바로 말하기", "🤔 혼자 생각한 뒤 말하기"],
-    ["💬 메시지 오면 바로 답장", "💬 여유 있을 때 답장"],
-    ["🎁 원하는 선물을 정확히 받기", "🎉 예상 못 한 깜짝 선물 받기"],
-    ["🔮 미래를 미리 알기", "🔄 과거의 선택 한 번 바꾸기"]
-  ];
+function showScreen(id){
+ ["joinScreen","questionScreen","waitingScreen","hostScreen"].forEach(s=>$(s).classList.add("hidden"));
+ $(id).classList.remove("hidden");
+}
+function errorMessage(id,error){
+ console.error(error);
+ $(id).textContent="연결 오류가 발생했어요. Firebase 규칙과 진행자 계정을 확인해 주세요.";
+}
+function renderQuestions(){
+ const grid=$("questionGrid");
+ grid.replaceChildren();
+ questions.forEach((q,i)=>{
+  const card=document.createElement("div");card.className="question-card";
+  const title=document.createElement("div");title.className="question-title";
+  title.textContent=`${i+1}. ${q[0]} vs ${q[1]}`;card.appendChild(title);
+  const box=document.createElement("div");box.className="choices";
+  q.forEach((answer,j)=>{
+   const b=document.createElement("button");b.type="button";b.className="choice";
+   b.textContent=`${j===0?"A":"B"} · ${answer}`;
+   if(choices[i]===j)b.classList.add("selected");
+   b.disabled=submitted;
+   b.addEventListener("click",()=>{
+    if(submitted)return;
+    choices[i]=j;renderQuestions();
+   });
+   box.appendChild(b);
+  });
+  card.appendChild(box);grid.appendChild(card);
+ });
+ const count=choices.filter(x=>x!==null).length;
+ $("questionCounter").textContent=`선택 ${count} / 25`;
+ $("submitButton").disabled=count!==25||submitted;
+}
+function randomItem(items){return items[Math.floor(Math.random()*items.length)]}
+function questionText(index){
+ return index>=0&&index<25?`${index+1}. ${questions[index][0]} vs ${questions[index][1]}`:"";
+}
+function renderRelay(relay){
+ if(!relay)return;
+ const finished=relay.finished===true;
+ const qIndex=relay.questionIndex;
+ const currentName=players[relay.currentUid]?.name||"참가자";
+ const answer=answers[relay.currentUid]?.choices?.[qIndex];
+ const answerText=answer===0?"A · "+questions[qIndex]?.[0]:answer===1?"B · "+questions[qIndex]?.[1]:"";
+ const status=finished?"🎉 모든 질문이 끝났어요!":`현재 주자: ${currentName}`;
+ const detail=finished?"릴레이가 종료되었습니다.":`질문 ${qIndex+1} / 25 · 다음 버튼을 눌러 릴레이를 진행하세요.`;
+ ["hostRelayStatus","playerRelayStatus"].forEach(id=>$(id).textContent=status);
+ ["hostRelayQuestion","playerRelayQuestion"].forEach(id=>$(id).textContent=finished?"게임 종료":questionText(qIndex));
+ ["hostRelayAnswer","playerRelayAnswer"].forEach(id=>$(id).textContent=finished?"":answerText);
+ ["hostRelayDetail","playerRelayDetail"].forEach(id=>$(id).textContent=detail);
+ $("hostRelay").classList.toggle("hidden",!isHost);
+ $("playerRelay").classList.toggle("hidden",isHost);
+ $("nextButton").disabled=finished;
+ $("nextButton").textContent=finished?"게임 종료":"다음 릴레이 진행";
+}
+async function startRelay(){
+ const playerEntries=Object.entries(players).filter(([uid,p])=>p.submitted&&answers[uid]?.choices?.length===25);
+ if(!playerEntries.length)throw new Error("제출을 완료한 참가자가 없습니다.");
+ const first=randomItem(playerEntries);
+ await set(ref(db,"game/relay"),{
+  started:true,finished:false,questionIndex:0,currentUid:first[0],
+  visited:[],moveMessage:"첫 주자가 무작위로 정해졌어요!",updatedAt:Date.now()
+ });
+ await set(ref(db,"game/status"),"started");
+}
+async function nextRelay(){
+ const snap=await get(ref(db,"game/relay"));
+ const relay=snap.val();
+ if(!relay||relay.finished)return;
+ const q=relay.questionIndex;
+ const currentUid=relay.currentUid;
+ const currentAnswer=answers[currentUid]?.choices?.[q];
+ if(currentAnswer===undefined||currentAnswer===null)throw new Error("현재 주자의 답변을 찾을 수 없습니다.");
+ const visited=Array.isArray(relay.visited)?relay.visited:[];
+ const used=[...visited,currentUid];
+ const candidates=Object.keys(answers).filter(uid=>
+  uid!==currentUid&&!used.includes(uid)&&
+  Array.isArray(answers[uid].choices)&&answers[uid].choices[q]===currentAnswer
+ );
+ if(candidates.length){
+  const nextUid=randomItem(candidates);
+  await update(ref(db,"game/relay"),{
+   currentUid:nextUid,visited:used,
+   moveMessage=`같은 답변을 선택한 참가자에게 릴레이합니다.`,
+   updatedAt:Date.now()
+  });
+  return;
+ }
+ const nextQuestion=q+1;
+ if(nextQuestion>=questions.length){
+  await update(ref(db,"game/relay"),{
+   finished:true,visited:used,
+   moveMessage:"25개 질문이 모두 끝났어요!",updatedAt:Date.now()
+  });
+  return;
+ }
+ const available=Object.keys(answers);
+ const nextUid=randomItem(available);
+ await update(ref(db,"game/relay"),{
+  questionIndex:nextQuestion,currentUid:nextUid,visited:[],
+  moveMessage:`같은 답을 선택한 다음 주자가 없어 ${q+1}번 질문을 건너뛰었어요.`,
+  updatedAt:Date.now()
+ });
+}
+async function startApp(){
+ try{
+  const credential=await signInAnonymously(auth);
+  user=credential.user;
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const auth = getAuth(app);
-  const isHost = new URLSearchParams(location.search).has("host");
-
-  const $ = (id) => document.getElementById(id);
-  let user = null;
-  let playerName = "";
-  let choices = Array(25).fill(null);
-  let submitted = false;
-
-  function showScreen(id) {
-    ["joinScreen", "questionScreen", "waitingScreen", "hostScreen"]
-      .forEach(screen => $(screen).classList.add("hidden"));
-    $(id).classList.remove("hidden");
-  }
-
-  function showError(id, error) {
-    console.error(error);
-    $(id).textContent =
-      "연결에 실패했어요. 데이터베이스 규칙 설정을 확인해 주세요.";
-  }
-
-  function renderQuestions() {
-    const grid = $("questionGrid");
-    grid.replaceChildren();
-
-    questions.forEach((question, index) => {
-      const card = document.createElement("div");
-      card.className = "question-card";
-
-      const title = document.createElement("div");
-      title.className = "question-title";
-      title.textContent = `${index + 1}. ${question[0]} vs ${question[1]}`;
-      card.appendChild(title);
-
-      const choicesBox = document.createElement("div");
-      choicesBox.className = "choices";
-
-      question.forEach((answer, optionIndex) => {
-        const button = document.createElement("button");
-        button.className = "choice";
-        button.textContent = `${optionIndex === 0 ? "A" : "B"} · ${answer}`;
-        button.type = "button";
-
-        button.addEventListener("click", () => {
-          if (submitted) return;
-          choices[index] = optionIndex;
-          renderQuestions();
-        });
-
-        if (choices[index] === optionIndex) {
-          button.classList.add("selected");
-        }
-        choicesBox.appendChild(button);
-      });
-
-      card.appendChild(choicesBox);
-      grid.appendChild(card);
+  if(isHost){
+   showScreen("hostScreen");
+   if(user.uid!==HOST_UID){
+    $("hostMessage").textContent="진행자 계정이 달라요. UID를 설정했던 같은 브라우저에서 진행자 화면을 열어 주세요.";
+   }
+   onValue(ref(db,"players"),snap=>{
+    players=snap.val()||{};
+    const list=Object.values(players);
+    const completed=list.filter(p=>p.submitted).length;
+    $("hostCount").textContent=`참가 ${list.length}명 · 제출 완료 ${completed}명`;
+    const box=$("playerList");box.replaceChildren();
+    list.forEach(p=>{
+     const row=document.createElement("div");row.className="player-row";
+     row.textContent=`${p.name} · ${p.submitted?"제출 완료":"답변 작성 중"}`;
+     box.appendChild(row);
     });
+   },e=>errorMessage("hostMessage",e));
 
-    const count = choices.filter(value => value !== null).length;
-    $("questionCounter").textContent = `선택 ${count} / 25`;
-    $("submitButton").disabled = count !== 25 || submitted;
-  }
+   onValue(ref(db,"answers"),snap=>{
+    answers=snap.val()||{};
+    const box=$("answerList");box.replaceChildren();
+    Object.values(answers).forEach(entry=>{
+     const row=document.createElement("div");row.className="player-row";
+     row.textContent=`${entry.name}: `+entry.choices.map((v,i)=>`${i+1}.${v===0?"A":"B"}`).join(" / ");
+     box.appendChild(row);
+    });
+   },e=>errorMessage("hostMessage",e));
 
-  async function startApp() {
-    try {
-      const credential = await signInAnonymously(auth);
-      user = credential.user;
-
-      if (isHost) {
-        showScreen("hostScreen");
-        $("hostMessage").textContent =
-          "인증은 완료됐어요. 다음 단계에서 데이터베이스 규칙을 설정할게요.";
-
-        onValue(ref(db, "players"), snapshot => {
-          const players = snapshot.val() || {};
-          const list = Object.values(players);
-          const completed = list.filter(p => p.submitted).length;
-          $("hostCount").textContent =
-            `참가 ${list.length}명 · 제출 완료 ${completed}명`;
-
-          const playerList = $("playerList");
-          playerList.replaceChildren();
-
-          list.forEach(player => {
-            const row = document.createElement("div");
-            row.className = "player-row";
-            row.textContent =
-              `${player.name} · ${player.submitted ? "제출 완료" : "답변 작성 중"}`;
-            playerList.appendChild(row);
-          });
-        }, error => showError("hostMessage", error));
-
-        onValue(ref(db, "game/status"), snapshot => {
-          if (snapshot.val() === "started") {
-            $("hostMessage").textContent = "게임이 시작됐어요!";
-            $("startButton").disabled = true;
-            $("revealedAnswers").classList.remove("hidden");
-
-            onValue(ref(db, "answers"), answerSnapshot => {
-              const answers = answerSnapshot.val() || {};
-              const answerList = $("answerList");
-              answerList.replaceChildren();
-
-              Object.values(answers).forEach(entry => {
-                const row = document.createElement("div");
-                row.className = "player-row";
-                row.textContent = `${entry.name}: ` +
-                  entry.choices.map((choice, i) =>
-                    `${i + 1}.${choice === 0 ? "A" : "B"}`
-                  ).join(" / ");
-                answerList.appendChild(row);
-              });
-            }, error => showError("hostMessage", error));
-          }
-        }, error => showError("hostMessage", error));
-
-        $("startButton").addEventListener("click", async () => {
-          try {
-            await set(ref(db, "game/status"), "started");
-            $("hostMessage").textContent = "게임 시작 신호를 보냈어요!";
-          } catch (error) {
-            showError("hostMessage", error);
-          }
-        });
-        return;
-      }
-
-      showScreen("joinScreen");
-
-      $("joinButton").addEventListener("click", async () => {
-        const name = $("playerName").value.trim();
-        if (!name) {
-          $("message").textContent = "이름을 먼저 입력해 주세요.";
-          return;
-        }
-
-        playerName = name;
-        $("joinButton").disabled = true;
-
-        try {
-          await set(ref(db, "players/" + user.uid), {
-            name: playerName,
-            joinedAt: Date.now(),
-            submitted: false
-          });
-
-          $("welcomeName").textContent = `${playerName}님`;
-          renderQuestions();
-          showScreen("questionScreen");
-          $("message").textContent = "";
-        } catch (error) {
-          showError("message", error);
-        } finally {
-          $("joinButton").disabled = false;
-        }
-      });
-
-      $("playerName").addEventListener("keydown", event => {
-        if (event.key === "Enter") $("joinButton").click();
-      });
-
-      $("submitButton").addEventListener("click", async () => {
-        if (choices.some(value => value === null) || submitted) return;
-
-        $("submitButton").disabled = true;
-        $("questionMessage").textContent = "답변을 제출하고 있어요.";
-
-        try {
-          await set(ref(db, "answers/" + user.uid), {
-            name: playerName,
-            choices: choices,
-            submittedAt: Date.now()
-          });
-
-          await update(ref(db, "players/" + user.uid), {
-            submitted: true
-          });
-
-          submitted = true;
-          showScreen("waitingScreen");
-
-          onValue(ref(db, "game/status"), snapshot => {
-            if (snapshot.val() === "started") {
-              $("waitingText").textContent =
-                "게임이 시작됐어요! 진행자의 안내를 따라 주세요.";
-            }
-          });
-        } catch (error) {
-          $("submitButton").disabled = false;
-          showError("questionMessage", error);
-        }
-      });
-
-    } catch (error) {
-      console.error(error);
-      if (isHost) {
-        showScreen("hostScreen");
-        $("hostMessage").textContent =
-          "인증에 실패했어요. 페이지를 새로고침해 주세요.";
-      } else {
-        $("message").textContent =
-          "인증에 실패했어요. 페이지를 새로고침해 주세요.";
-      }
+   onValue(ref(db,"game/status"),snap=>{
+    if(snap.val()==="started"){
+     $("startButton").disabled=true;
+     $("startButton").textContent="게임 시작 완료";
+     $("revealedAnswers").classList.remove("hidden");
+     $("hostRelay").classList.remove("hidden");
     }
+   },e=>errorMessage("hostMessage",e));
+
+   onValue(ref(db,"game/relay"),snap=>{
+    const relay=snap.val();
+    if(relay){
+     renderRelay(relay);
+     $("hostMessage").textContent=relay.moveMessage||"릴레이 진행 중";
+    }
+   },e=>errorMessage("hostMessage",e));
+
+   $("startButton").addEventListener("click",async()=>{
+    if(user.uid!==HOST_UID){$("hostMessage").textContent="지정된 진행자 계정에서만 시작할 수 있어요.";return;}
+    if(!Object.keys(players).length){$("hostMessage").textContent="참가자가 아직 없어요.";return;}
+    if(Object.values(players).some(p=>!p.submitted)){
+     $("hostMessage").textContent="아직 답변을 제출하지 않은 참가자가 있어요.";return;
+    }
+    if(!Object.keys(answers).length){$("hostMessage").textContent="제출된 답변이 없어요.";return;}
+    $("startButton").disabled=true;
+    try{
+     await startRelay();
+     $("hostMessage").textContent="게임이 시작됐어요!";
+    }catch(e){
+     $("startButton").disabled=false;errorMessage("hostMessage",e);
+    }
+   });
+   $("nextButton").addEventListener("click",async()=>{
+    if(user.uid!==HOST_UID){$("hostMessage").textContent="진행자 계정에서만 진행할 수 있어요.";return;}
+    $("nextButton").disabled=true;
+    try{await nextRelay();}
+    catch(e){errorMessage("hostMessage",e);}
+    finally{$("nextButton").disabled=false;}
+   });
+   return;
   }
 
-  startApp();
+  showScreen("joinScreen");
+  $("joinButton").addEventListener("click",async()=>{
+   const name=$("playerName").value.trim();
+   if(!name){$("message").textContent="이름을 먼저 입력해 주세요.";return;}
+   playerName=name;$("joinButton").disabled=true;
+   try{
+    await set(ref(db,"players/"+user.uid),{name:playerName,joinedAt:Date.now(),submitted:false});
+    $("welcomeName").textContent=`${playerName}님`;
+    renderQuestions();showScreen("questionScreen");
+    $("message").textContent="";
+   }catch(e){errorMessage("message",e);}
+   finally{$("joinButton").disabled=false;}
+  });
+  $("playerName").addEventListener("keydown",e=>{if(e.key==="Enter")$("joinButton").click();});
+  $("submitButton").addEventListener("click",async()=>{
+   if(choices.some(v=>v===null)||submitted)return;
+   $("submitButton").disabled=true;
+   $("questionMessage").textContent="답변을 제출하고 있어요.";
+   try{
+    await set(ref(db,"answers/"+user.uid),{name:playerName,choices,submittedAt:Date.now()});
+    await update(ref(db,"players/"+user.uid),{submitted:true});
+    submitted=true;showScreen("waitingScreen");
+    onValue(ref(db,"game/status"),snap=>{
+     if(snap.val()==="started"){
+      $("waitingText").textContent="게임이 시작됐어요! 아래에서 릴레이 진행을 확인해 주세요.";
+     }
+    });
+    onValue(ref(db,"game/relay"),snap=>renderRelay(snap.val()));
+   }catch(e){
+    $("submitButton").disabled=false;errorMessage("questionMessage",e);
+   }
+  });
+ }catch(e){
+  console.error(e);
+  if(isHost){showScreen("hostScreen");errorMessage("hostMessage",e);}
+  else errorMessage("message",e);
+ }
+}
+startApp();
 </script>
 </body>
 </html>
-
-</body>
-</html>
-
