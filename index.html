@@ -4,684 +4,438 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>초성게임</title>
-
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f6fa;
-      color: #222;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    }
-
-    input, button {
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      margin-top: 10px;
-    }
-
-    button {
-      border: none;
-      background: #333;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #ccc;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .question {
-      text-align: center;
-      font-size: 48px;
-      font-weight: bold;
-      margin: 25px 0;
-      letter-spacing: 8px;
-    }
-
-    .answer {
-      text-align: center;
-      font-size: 20px;
-      margin: 15px 0;
-    }
-
-    .ranking {
-      line-height: 1.8;
-      font-size: 17px;
-    }
-
-    .winner {
-      font-size: 22px;
-      font-weight: bold;
-      text-align: center;
-      margin: 15px 0;
-    }
-
-    .small {
-      color: #777;
-      font-size: 14px;
-      text-align: center;
-    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:Arial,sans-serif; background:#f5f6fa; color:#222; }
+    .container { max-width:640px; margin:auto; padding:16px; }
+    h1 { text-align:center; margin:8px 0 20px; font-size:28px; }
+    h2 { margin-top:0; }
+    .card { background:#fff; border-radius:18px; padding:18px; margin-bottom:14px; box-shadow:0 4px 15px rgba(0,0,0,.07); }
+    input, button { width:100%; padding:13px; font-size:16px; border-radius:10px; margin-top:9px; }
+    input { border:1px solid #d8dbe5; background:#fff; }
+    button { border:0; background:#303846; color:#fff; font-weight:bold; cursor:pointer; }
+    button.secondary { background:#e9edf5; color:#273142; }
+    button.warning { background:#a64b36; }
+    button:disabled { background:#c7cad1; cursor:not-allowed; }
+    .hidden { display:none !important; }
+    .question { text-align:center; font-size:clamp(30px,8vw,48px); font-weight:800; margin:24px 0; letter-spacing:5px; overflow-wrap:anywhere; }
+    .answer { text-align:center; font-size:20px; margin:14px 0; font-weight:bold; }
+    .ranking { line-height:1.8; font-size:16px; }
+    .rank-row { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid #f0f1f5; }
+    .rank-row.me { color:#3d50c8; font-weight:bold; background:#f0f2ff; padding:7px 9px; border-radius:8px; }
+    .rank-name { overflow-wrap:anywhere; }
+    .rank-score { white-space:nowrap; }
+    .winner { font-size:19px; font-weight:bold; text-align:center; margin:14px 0; min-height:24px; }
+    .small { color:#777; font-size:13px; text-align:center; line-height:1.6; }
+    .pill { display:inline-block; border-radius:999px; background:#eef0f7; padding:6px 10px; font-size:13px; font-weight:bold; }
+    .big-title { font-size:30px; font-weight:800; text-align:center; margin:25px 0 12px; }
+    .score-box { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0; }
+    .score-item { background:#f5f6fb; border-radius:12px; padding:12px; text-align:center; }
+    .score-value { font-size:25px; font-weight:800; margin-top:4px; }
+    .host-buttons { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .host-buttons button { margin-top:0; }
+    .status { text-align:center; font-size:14px; color:#555; margin-top:8px; }
+    .section-label { font-size:13px; color:#777; margin-bottom:6px; }
+    @media (max-width:380px) { .container{padding:10px} .card{padding:14px} .host-buttons{grid-template-columns:1fr} }
   </style>
 </head>
-
 <body>
-
 <div class="container">
-
-  <!-- 시작 화면 -->
   <div id="startScreen" class="card">
     <h1>🔤 초성게임</h1>
-
-    <input
-      id="nameInput"
-      type="text"
-      placeholder="이름을 입력하세요"
-      maxlength="10"
-    >
-
-    <button onclick="joinGame()">게임 참가</button>
-
-    <p class="small">
-      이름을 입력하고 게임에 참가해주세요.
-    </p>
+    <input id="nameInput" type="text" placeholder="이름을 입력하세요" maxlength="10" autocomplete="name">
+    <button id="joinButton" onclick="joinGame()">게임 참가</button>
+    <p class="small">정답은 띄어쓰기 없이 입력해주세요.</p>
   </div>
 
-
-  <!-- 참가자 화면 -->
   <div id="playerScreen" class="hidden">
-
     <div class="card">
       <h2 id="playerWelcome"></h2>
-
-      <div class="small">
-        진행자가 문제를 시작하면 초성이 나타납니다.
-      </div>
-
-      <div id="playerQuestion" class="question">
-        준비중
-      </div>
-
-      <input
-        id="answerInput"
-        type="text"
-        placeholder="정답을 입력하세요"
-        autocomplete="off"
-      >
-
-      <button id="submitButton" onclick="submitAnswer()">
-        정답 제출
-      </button>
-
-      <div id="submitMessage" class="small"></div>
+      <div id="playerRoundLabel" class="small">진행자가 게임을 시작하면 문제가 나타납니다.</div>
+      <div id="playerBigTitle" class="big-title hidden"></div>
+      <div id="playerQuestion" class="question">준비중</div>
+      <div id="playerPoints" class="small"></div>
+      <input id="answerInput" type="text" placeholder="정답을 입력하세요 (띄어쓰기 없이)" autocomplete="off" disabled>
+      <button id="submitButton" onclick="submitAnswer()" disabled>정답 제출</button>
+      <div id="submitMessage" class="status" aria-live="polite"></div>
     </div>
-
     <div class="card">
-      <h3>🏆 현재 순위</h3>
-      <div id="playerRanking" class="ranking">
-        아직 점수가 없습니다.
+      <h3>🙋 내 점수</h3>
+      <div class="score-box">
+        <div class="score-item"><div class="section-label" id="myScoreLabel">현재 라운드</div><div class="score-value" id="myScore">0점</div></div>
+        <div class="score-item"><div class="section-label">현재 순위</div><div class="score-value" id="myRank">-</div></div>
       </div>
     </div>
-
+    <div class="card">
+      <h3>🏆 실시간 순위</h3>
+      <div id="playerRanking" class="ranking">아직 참가자가 없습니다.</div>
+    </div>
   </div>
 
-
-  <!-- 진행자 화면 -->
   <div id="hostScreen" class="hidden">
-
     <div class="card">
-
       <h1>🎤 진행자 화면</h1>
-
-      <div id="questionNumber">
-        문제 준비
+      <div id="hostRoundLabel" class="small">새 게임을 시작해주세요.</div>
+      <div id="questionNumber" class="status">문제 준비</div>
+      <div id="hostBigTitle" class="big-title hidden"></div>
+      <div id="hostQuestion" class="question">-</div>
+      <div id="hostPoints" class="small"></div>
+      <div id="hostAnswer" class="answer">정답: -</div>
+      <div id="winner" class="winner"></div>
+      <div class="host-buttons">
+        <button onclick="newGame()">🔄 새 게임 / 점수 초기화</button>
+        <button onclick="startRound(0)">🍖 1라운드 시작</button>
+        <button onclick="startRound(1)">🏅 2라운드 시작</button>
+        <button onclick="startRound(2)">🎬 3라운드 시작</button>
+        <button onclick="startRound(3)">🍪 보너스 라운드</button>
+        <button onclick="startFirstQuestion()">▶ 첫 문제 시작</button>
+        <button onclick="showAnswer()" class="secondary">👀 정답 공개</button>
+        <button onclick="nextQuestion()">다음 문제 ▶</button>
+        <button onclick="showRoundResult()" class="secondary">🏆 라운드 결과 보기</button>
+        <button onclick="finishGame()" class="warning">게임 종료 / 최종 결과</button>
       </div>
-
-      <div id="hostQuestion" class="question">
-        -
-      </div>
-
-      <div id="hostAnswer" class="answer">
-        정답: -
-      </div>
-
-      <div id="winner" class="winner">
-        -
-      </div>
-
-      <button onclick="nextQuestion()">
-        ▶ 다음 문제
-      </button>
-
-      <button onclick="showAnswer()">
-        👀 정답 보기
-      </button>
-
+      <p class="small">진행 순서: 라운드 시작 → 타이틀 화면 → 첫 문제 시작 → 정답 공개/다음 문제 → 라운드 결과</p>
     </div>
-
-
     <div class="card">
-
       <h3>👥 참가자</h3>
-
-      <div id="participants">
-        아직 참가자가 없습니다.
-      </div>
-
+      <div id="participants" class="ranking">아직 참가자가 없습니다.</div>
     </div>
-
-
     <div class="card">
-
-      <h3>🏆 현재 순위</h3>
-
-      <div id="hostRanking" class="ranking">
-        아직 점수가 없습니다.
-      </div>
-
+      <h3>🏆 현재 라운드 순위</h3>
+      <div id="hostRanking" class="ranking">아직 점수가 없습니다.</div>
     </div>
-
   </div>
-
 </div>
 
-
 <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, push, runTransaction, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-  import {
-    getDatabase,
-    ref,
-    set,
-    get,
-    onValue,
-    push,
-    runTransaction
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-
-  // Firebase 설정
   const firebaseConfig = {
-
     apiKey: "AIzaSyAWLUTCM2SqdaDCQB_XNS4uoZK-qhSHtIg",
-
-    authDomain:
-      "workshop-chosung.firebaseapp.com",
-
-    databaseURL:
-      "https://workshop-chosung-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-    projectId:
-      "workshop-chosung",
-
-    storageBucket:
-      "workshop-chosung.firebasestorage.app",
-
-    messagingSenderId:
-      "574056053091",
-
-    appId:
-      "1:574056053091:web:8ca2f88db16bd737a4fb56"
-
+    authDomain: "workshop-chosung.firebaseapp.com",
+    databaseURL: "https://workshop-chosung-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "workshop-chosung",
+    storageBucket: "workshop-chosung.firebasestorage.app",
+    messagingSenderId: "574056053091",
+    appId: "1:574056053091:web:8ca2f88db16bd737a4fb56"
   };
-
-
   const app = initializeApp(firebaseConfig);
-
   const db = getDatabase(app);
 
-
-  // 초성 문제
-  const questions = [
-
-    { q: "ㅊㅋ", a: "치킨" },
-    { q: "ㅍㅈ", a: "피자" },
-    { q: "ㄸㅂㅇ", a: "떡볶이" },
-    { q: "ㄱㅂ", a: "김밥" },
-    { q: "ㅇㅁㄹㅋㄴ", a: "아메리카노" },
-    { q: "ㅋㅍ", a: "캠핑" },
-    { q: "ㅎㅋㅅ", a: "호캉스" },
-    { q: "ㅎㅇㅇㅎ", a: "해외여행" },
-    { q: "ㅂㄷ", a: "바다" },
-    { q: "ㅅ", a: "산" },
-    { q: "ㄴㅈ", a: "늦잠" },
-    { q: "ㅇㅇㅅㅋㄹ", a: "아이스크림" },
-    { q: "ㄴㄹㅂ", a: "노래방" },
-    { q: "ㅇㅎㄱ", a: "영화관" },
-    { q: "ㅂㄹ", a: "볼링" },
-    { q: "ㅇㅎ", a: "여행" },
-    { q: "ㅁㅈㅌㅂ", a: "맛집탐방" },
-    { q: "ㄴㅍㄹㅅ", a: "넷플릭스" },
-    { q: "ㅅㅈ", a: "사진" },
-    { q: "ㅂㅅㄱ", a: "비상금" }
-
+  const rounds = [
+    { title: "1라운드 · 음식 🍖", name: "음식", questions: [
+      {q:"ㄱㅂㅉ",a:"갈비찜",p:1}, {q:"ㅂㄷㅉㄱ",a:"부대찌개",p:1},
+      {q:"ㅈㅇㅂㅇ",a:"제육볶음",p:1}, {q:"ㅎㅁㅍㅈ",a:"해물파전",p:1},
+      {q:"ㅁㄹㅌ",a:"마라탕",p:1}, {q:"ㄷㄲㅅ",a:"돈까스",p:1},
+      {q:"ㄸㅂㅇ",a:"떡볶이",p:1}, {q:"ㄹㅁ",a:"라면",p:1},
+      {q:"ㅊㅂ",a:"초밥",p:1}, {q:"ㅅㅍㄱㅌ",a:"스파게티",p:1}
+    ]},
+    { title: "2라운드 · 스포츠 🏅", name: "스포츠", questions: [
+      {q:"ㅂㄷㅁㅌ",a:"배드민턴",p:1}, {q:"ㄹㄷㅊㅈ",a:"리듬체조",p:1},
+      {q:"ㅎㅊㅇㄹㅂ",a:"휠체어럭비",p:2}, {q:"ㅅㅋㄹㅌ",a:"스켈레톤",p:1},
+      {q:"ㅈㄷㄴㅇㄸㄱ",a:"장대높이뛰기",p:2}, {q:"ㅋㄹ",a:"컬링",p:1},
+      {q:"ㅈㅈ",a:"조정",p:1}, {q:"ㅅㅁ",a:"승마",p:1},
+      {q:"ㅅㅋㅅㅋㅂ",a:"스킨스쿠버",p:2}, {q:"ㅇㅌ",a:"요트",p:1}
+    ]},
+    { title: "3라운드 · 영화·드라마 🎬", name: "영화·드라마", questions: [
+      {q:"ㄱㅅㅊ",a:"기생충",p:1}, {q:"ㅂㅈㄷㅅ",a:"범죄도시",p:1},
+      {q:"ㅇㅈㅇㄱㅇ",a:"오징어게임",p:1}, {q:"ㅇㄱㅅㄴㄴㅈ",a:"왕과사는남자",p:2},
+      {q:"ㅅㅇㅇㅂ",a:"서울의봄",p:1}, {q:"ㅁㅅㅌㅅㅅㅇ",a:"미스터션샤인",p:2},
+      {q:"ㅅㄱㄹㅇㅇㅅㅅㅎ",a:"슬기로운의사생활",p:2}, {q:"ㅇㄷㅎㄹㅇㄱㅍㅍ",a:"응답하라일구팔팔",p:3},
+      {q:"ㅂㅈㅅㅈㄴㅇㅃㄴㄴ",a:"밥잘사주는예쁜누나",p:2}, {q:"ㅈㅇㅇㄱ",a:"전원일기",p:1}
+    ]},
+    { title: "보너스 라운드 · 과자 🍪", name: "보너스 과자", bonus: true, questions: [
+      {q:"ㅈㄱㅊ",a:"자갈치",p:1}, {q:"ㅋㅊ",a:"콘칩",p:1},
+      {q:"ㅇㅁㅅㅍㅇ",a:"엄마손파이",p:2}, {q:"ㅅㄷㄷㄸㅂㅇ",a:"신당동떡볶이",p:3},
+      {q:"ㅍㅅㅌ",a:"포스틱",p:1}, {q:"ㅂㅊ",a:"빈츠",p:3},
+      {q:"ㅇㅍㄹ",a:"양파링",p:1}, {q:"ㅎㄴㅂㅌㅊ",a:"허니버터칩",p:3},
+      {q:"ㅁㄷㅅ",a:"맛동산",p:4}, {q:"ㅃㄸ",a:"뽀또",p:5}
+    ]}
   ];
-
 
   let playerName = "";
   let playerId = "";
-  let currentQuestion = -1;
-  let answered = false;
+  let gameState = null;
+  let lastQuestionKey = "";
+  let hostStarted = false;
+  let playerListenerStarted = false;
+  const $ = id => document.getElementById(id);
+  const scoreKey = roundIndex => roundIndex === 3 ? "bonusScore" : `r${roundIndex}`;
+  const cleanAnswer = value => String(value ?? "").replace(/\s/g, "").toLowerCase();
+  const safe = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
 
+  function currentRound() { return gameState && Number.isInteger(gameState.roundIndex) ? rounds[gameState.roundIndex] : null; }
+  function currentQuestionData() {
+    const round = currentRound();
+    if (!round || !Number.isInteger(gameState.questionIndex) || gameState.questionIndex < 0) return null;
+    return round.questions[gameState.questionIndex] || null;
+  }
+  function currentScore(player, roundIndex = gameState?.roundIndex) {
+    if (!player) return 0;
+    if (roundIndex === 3) return Number(player.bonusScore || 0);
+    if (roundIndex >= 0 && roundIndex <= 2) return Number(player.scores?.[`r${roundIndex}`] || 0);
+    return 0;
+  }
+  function scoreLabel(roundIndex) { return roundIndex === 3 ? "보너스 점수" : `${roundIndex + 1}라운드 점수`; }
+  function setMessage(text) { $("submitMessage").textContent = text; }
+  function questionKey(state = gameState) {
+    if (!state || !state.sessionId || state.roundIndex < 0 || state.questionIndex < 0) return "";
+    return `${state.sessionId}_r${state.roundIndex}_q${state.questionIndex}`;
+  }
 
-  // 참가
   window.joinGame = async function() {
-
-    const name =
-      document.getElementById("nameInput").value.trim();
-
-    if (!name) {
-      alert("이름을 입력해주세요.");
-      return;
-    }
-
+    const name = $("nameInput").value.trim();
+    if (!name) { alert("이름을 입력해주세요."); return; }
     playerName = name;
-
-    playerId =
-      name + "_" + Date.now();
-
-
-    await set(
-      ref(db, "players/" + playerId),
-      {
-        name: playerName,
-        score: 0
-      }
-    );
-
-
-    document.getElementById("startScreen")
-      .classList.add("hidden");
-
-    document.getElementById("playerScreen")
-      .classList.remove("hidden");
-
-    document.getElementById("playerWelcome")
-      .innerText =
-      playerName + "님 환영합니다!";
-
-
-    listenGame();
-
+    const newPlayerRef = push(ref(db, "players"));
+    playerId = newPlayerRef.key;
+    await set(newPlayerRef, { name: playerName, scores: {r0:0,r1:0,r2:0}, bonusScore:0, joinedAt:Date.now() });
+    $("startScreen").classList.add("hidden");
+    $("playerScreen").classList.remove("hidden");
+    $("playerWelcome").textContent = `${playerName}님 환영합니다!`;
+    if (!playerListenerStarted) listenPlayer();
   };
 
-
-  // 게임 상태 감시
-  function listenGame() {
-
-    onValue(
-      ref(db, "game"),
-      snapshot => {
-
-        const data = snapshot.val();
-
-        if (!data) return;
-
-
-        currentQuestion =
-          data.currentQuestion ?? -1;
-
-
-        if (currentQuestion >= 0) {
-
-          document.getElementById("playerQuestion")
-            .innerText =
-            questions[currentQuestion].q;
-
-        } else {
-
-          document.getElementById("playerQuestion")
-            .innerText =
-            "준비중";
-
-        }
-
-
-        answered = false;
-
-        document.getElementById("answerInput")
-          .value = "";
-
-        document.getElementById("submitMessage")
-          .innerText = "";
-
-        document.getElementById("submitButton")
-          .disabled = false;
-
-      }
-    );
-
-
-    onValue(
-      ref(db, "players"),
-      snapshot => {
-
-        const players = snapshot.val();
-
-        if (!players) return;
-
-        const sorted =
-          Object.values(players)
-            .sort((a,b) => b.score - a.score);
-
-
-        let html = "";
-
-        sorted.forEach((p, index) => {
-
-          html +=
-            `${index + 1}위 ${p.name} — ${p.score}점<br>`;
-
-        });
-
-
-        document.getElementById("playerRanking")
-          .innerHTML = html;
-
-      }
-    );
-
+  function listenPlayer() {
+    playerListenerStarted = true;
+    onValue(ref(db, "game"), snapshot => {
+      gameState = snapshot.val();
+      renderPlayerGame();
+    });
+    onValue(ref(db, "players"), snapshot => renderRankings(snapshot.val() || {}));
   }
 
+  function renderPlayerGame() {
+    const state = gameState;
+    const round = currentRound();
+    const q = currentQuestionData();
+    const phase = state?.phase || "lobby";
+    const questionInput = $("answerInput");
+    const submitButton = $("submitButton");
+    const key = questionKey(state);
+    const newQuestion = key && key !== lastQuestionKey;
+    if (newQuestion) {
+      lastQuestionKey = key;
+      questionInput.value = "";
+      setMessage("");
+    }
 
-  // 정답 제출
+    $("playerBigTitle").classList.add("hidden");
+    $("playerQuestion").classList.remove("hidden");
+    $("playerPoints").textContent = "";
+    questionInput.disabled = true;
+    submitButton.disabled = true;
+
+    if (phase === "roundIntro" && round) {
+      $("playerRoundLabel").textContent = "새 라운드가 시작됩니다.";
+      $("playerBigTitle").textContent = round.title;
+      $("playerBigTitle").classList.remove("hidden");
+      $("playerQuestion").textContent = "준비하세요!";
+    } else if (phase === "question" && q && round) {
+      $("playerRoundLabel").textContent = `${round.title} · 문제 ${state.questionIndex + 1}/10`;
+      $("playerQuestion").textContent = q.q;
+      $("playerPoints").textContent = `이번 문제 ${q.p}점 · 정답은 띄어쓰기 없이 입력하세요.`;
+      questionInput.disabled = false;
+      submitButton.disabled = false;
+    } else if (phase === "answer" && q && round) {
+      $("playerRoundLabel").textContent = `${round.title} · 정답 공개`;
+      $("playerQuestion").textContent = q.q;
+      $("playerPoints").textContent = `정답: ${q.a} · ${q.p}점`;
+    } else if (phase === "roundResult" && round) {
+      $("playerRoundLabel").textContent = "라운드 종료";
+      $("playerBigTitle").textContent = `${round.title} 결과`;
+      $("playerBigTitle").classList.remove("hidden");
+      $("playerQuestion").textContent = "수고하셨습니다!";
+    } else if (phase === "finished") {
+      $("playerRoundLabel").textContent = "게임 종료";
+      $("playerBigTitle").textContent = "🏆 게임 종료!";
+      $("playerBigTitle").classList.remove("hidden");
+      $("playerQuestion").textContent = "순위를 확인하세요.";
+    } else {
+      $("playerRoundLabel").textContent = "진행자가 라운드를 시작할 때까지 기다려주세요.";
+      $("playerQuestion").textContent = "준비중";
+    }
+    renderMyScore();
+  }
+
+  async function renderRankings(players) {
+    const entries = Object.entries(players).map(([id,p]) => ({id,...p}));
+    const roundIndex = gameState?.roundIndex ?? -1;
+    entries.sort((a,b) => currentScore(b, roundIndex) - currentScore(a, roundIndex) || String(a.name).localeCompare(String(b.name), "ko"));
+    const html = entries.length ? entries.map((p,i) => `<div class="rank-row ${p.id === playerId ? "me" : ""}"><span class="rank-name">${i+1}위 ${safe(p.name)}${p.id === playerId ? " (나)" : ""}</span><span class="rank-score">${currentScore(p,roundIndex)}점</span></div>`).join("") : "아직 참가자가 없습니다.";
+    if (!$ ("playerRanking")) return;
+    $("playerRanking").innerHTML = html;
+    $("hostRanking").innerHTML = html;
+    $("participants").innerHTML = entries.length ? entries.map(p => `👤 ${safe(p.name)}`).join("<br>") : "아직 참가자가 없습니다.";
+    const me = entries.find(p => p.id === playerId);
+    if (me) {
+      $("myScore").textContent = `${currentScore(me,roundIndex)}점`;
+      $("myScoreLabel").textContent = roundIndex >= 0 ? scoreLabel(roundIndex) : "현재 점수";
+      $("myRank").textContent = `${entries.findIndex(p => p.id === playerId)+1}위`;
+    }
+  }
+
+  function renderMyScore() {
+    if (!playerId) return;
+    get(ref(db, "players/" + playerId)).then(snapshot => {
+      const me = snapshot.val();
+      if (!me) return;
+      const idx = gameState?.roundIndex ?? -1;
+      $("myScore").textContent = `${currentScore(me,idx)}점`;
+      $("myScoreLabel").textContent = idx >= 0 ? scoreLabel(idx) : "현재 점수";
+    }).catch(err => console.error(err));
+  }
+
   window.submitAnswer = async function() {
-
-    if (answered) return;
-
-    if (currentQuestion < 0) {
-
-      document.getElementById("submitMessage")
-        .innerText =
-        "아직 문제가 시작되지 않았어요.";
-
-      return;
-
-    }
-
-
-    const input =
-      document.getElementById("answerInput")
-        .value.trim();
-
-
+    if (!playerId || !gameState || gameState.phase !== "question") return;
+    const q = currentQuestionData();
+    if (!q) return;
+    const key = questionKey();
+    if (!key || $("submitButton").disabled) return;
+    const input = cleanAnswer($("answerInput").value);
     if (!input) return;
-
-
-    const answer =
-      questions[currentQuestion].a;
-
-
-    if (
-      input.replace(/\s/g,"")
-        !== answer.replace(/\s/g,"")
-    ) {
-
-      document.getElementById("submitMessage")
-        .innerText =
-        "❌ 땡! 다시 생각해보세요.";
-
+    if (input !== cleanAnswer(q.a)) {
+      setMessage("❌ 땡! 다시 생각해보세요.");
       return;
-
     }
-
-
-    answered = true;
-
-    document.getElementById("submitButton")
-      .disabled = true;
-
-
-   const answerRef =
-  push(ref(
-    db,
-    "answers/" + currentQuestion
-  ));
-
-await set(answerRef, {
-
-  playerId: playerId,
-
-  name: playerName,
-
-  time: Date.now()
-
-});
-
-
-// 첫 번째 정답자를 확인하고 점수 +1
-const winnerRef =
-  ref(
-    db,
-    "winners/" + currentQuestion
-  );
-
-const result =
-  await runTransaction(
-    winnerRef,
-    currentWinner => {
-
-      // 아직 아무도 정답을 맞히지 않았다면
-      if (currentWinner === null) {
-
-        return {
-          playerId: playerId,
-          name: playerName,
-          time: Date.now()
-        };
-
-      }
-
-      // 이미 다른 사람이 정답을 맞혔다면
+    $("submitButton").disabled = true;
+    $("answerInput").disabled = true;
+    const stateSnapshot = await get(ref(db,"game"));
+    const latest = stateSnapshot.val();
+    if (!latest || latest.phase !== "question" || questionKey(latest) !== key) {
+      setMessage("문제가 바뀌었어요. 다음 문제를 확인해주세요.");
       return;
-
     }
-  );
-
-
-// 내가 첫 번째 정답자라면
-if (result.committed) {
-
-  const playerRef =
-    ref(
-      db,
-      "players/" + playerId + "/score"
-    );
-
-  await runTransaction(
-    playerRef,
-    score => (score || 0) + 1
-  );
-
-  document.getElementById("submitMessage")
-    .innerText =
-    "🏆 정답! 가장 먼저 맞혔어요! +1점";
-
-} else {
-
-  document.getElementById("submitMessage")
-    .innerText =
-    "⭕ 정답! 하지만 조금 늦었어요.";
-
-}
-
+    const winnerRef = ref(db, `winners/${latest.sessionId}/r${latest.roundIndex}_q${latest.questionIndex}`);
+    const result = await runTransaction(winnerRef, winner => {
+      if (winner === null) return { playerId, name:playerName, points:q.p, time:Date.now() };
+      return;
+    });
+    if (result.committed) {
+      const path = latest.roundIndex === 3 ? `players/${playerId}/bonusScore` : `players/${playerId}/scores/r${latest.roundIndex}`;
+      await runTransaction(ref(db,path), score => Number(score || 0) + q.p);
+      setMessage(`🏆 가장 먼저 정답! +${q.p}점`);
+    } else {
+      setMessage("⭕ 정답! 하지만 조금 늦었어요.");
+    }
   };
 
-
-  // 진행자 화면
   function hostMode() {
-
-    document.getElementById("startScreen")
-      .classList.add("hidden");
-
-    document.getElementById("hostScreen")
-      .classList.remove("hidden");
-
-
-    onValue(
-      ref(db, "game"),
-      snapshot => {
-
-        const data = snapshot.val();
-
-        if (!data) return;
-
-
-        const q =
-          data.currentQuestion;
-
-
-        if (
-          q !== undefined &&
-          q >= 0
-        ) {
-
-          document.getElementById("questionNumber")
-            .innerText =
-            `문제 ${q + 1} / ${questions.length}`;
-
-          document.getElementById("hostQuestion")
-            .innerText =
-            questions[q].q;
-
-          document.getElementById("hostAnswer")
-            .innerText =
-            "정답: " + questions[q].a;
-
-        }
-
-      }
-    );
-
-
-    onValue(
-      ref(db, "players"),
-      snapshot => {
-
-        const players = snapshot.val();
-
-        if (!players) return;
-
-
-        const sorted =
-          Object.values(players)
-            .sort((a,b) => b.score - a.score);
-
-
-        let html = "";
-
-        sorted.forEach((p,index) => {
-
-          html +=
-            `${index + 1}위 ${p.name} — ${p.score}점<br>`;
-
-        });
-
-
-        document.getElementById("hostRanking")
-          .innerHTML = html;
-
-
-        document.getElementById("participants")
-          .innerHTML =
-          sorted.map(
-            p => `👤 ${p.name}`
-          ).join("<br>");
-
-      }
-    );
-
+    $("startScreen").classList.add("hidden");
+    $("hostScreen").classList.remove("hidden");
+    if (hostStarted) return;
+    hostStarted = true;
+    get(ref(db,"game")).then(snapshot => {
+      if (!snapshot.exists()) set(ref(db,"game"), {sessionId:String(Date.now()), phase:"lobby", roundIndex:-1, questionIndex:-1});
+    });
+    onValue(ref(db,"game"), snapshot => {
+      gameState = snapshot.val();
+      renderHost();
+    });
+    onValue(ref(db,"players"), snapshot => renderRankings(snapshot.val() || {}));
   }
 
-
-  // 다음 문제
-  window.nextQuestion = async function() {
-
-    let next =
-      currentQuestion + 1;
-
-
-    if (next >= questions.length) {
-
-      alert("20문제가 모두 끝났습니다!");
-
-      return;
-
+  function renderHost() {
+    const state = gameState;
+    const round = currentRound();
+    const q = currentQuestionData();
+    const phase = state?.phase || "lobby";
+    $("hostBigTitle").classList.add("hidden");
+    $("hostQuestion").textContent = "-";
+    $("hostAnswer").textContent = "정답: -";
+    $("hostPoints").textContent = "";
+    $("winner").textContent = "";
+    $("questionNumber").textContent = "문제 준비";
+    if (phase === "roundIntro" && round) {
+      $("hostRoundLabel").textContent = "타이틀 화면 · 참가자들이 준비되면 첫 문제를 시작하세요.";
+      $("hostBigTitle").textContent = round.title;
+      $("hostBigTitle").classList.remove("hidden");
+      $("hostQuestion").textContent = "준비하세요!";
+    } else if ((phase === "question" || phase === "answer") && q && round) {
+      $("hostRoundLabel").textContent = round.title;
+      $("questionNumber").textContent = `문제 ${state.questionIndex+1} / 10`;
+      $("hostQuestion").textContent = q.q;
+      $("hostPoints").textContent = `이번 문제 ${q.p}점`;
+      if (phase === "answer") $("hostAnswer").textContent = `정답: ${q.a}`;
+      get(ref(db,`winners/${state.sessionId}/r${state.roundIndex}_q${state.questionIndex}`)).then(s => {
+        const w = s.val();
+        if (w) $("winner").textContent = `🏆 선착순 정답: ${w.name} (+${w.points}점)`;
+      });
+    } else if (phase === "roundResult" && round) {
+      $("hostRoundLabel").textContent = `${round.title} 종료`;
+      $("hostBigTitle").textContent = `${round.title} 결과`;
+      $("hostBigTitle").classList.remove("hidden");
+      $("hostQuestion").textContent = "다음 라운드를 준비하세요.";
+    } else if (phase === "finished") {
+      $("hostRoundLabel").textContent = "모든 라운드 종료";
+      $("hostBigTitle").textContent = "🏆 게임 종료";
+      $("hostBigTitle").classList.remove("hidden");
+      $("hostQuestion").textContent = "보너스 라운드 순위를 확인하세요.";
+    } else {
+      $("hostRoundLabel").textContent = "새 게임을 시작하고 참가자를 확인하세요.";
     }
+  }
 
-
-    currentQuestion = next;
-
-
-    await set(
-      ref(db, "game"),
-      {
-        currentQuestion: next
-      }
-    );
-
-
-    document.getElementById("winner")
-      .innerText = "";
-
+  window.newGame = async function() {
+    const snap = await get(ref(db,"players"));
+    const players = snap.val() || {};
+    const tasks = Object.entries(players).map(([id]) => update(ref(db,`players/${id}`), {scores:{r0:0,r1:0,r2:0}, bonusScore:0}));
+    await Promise.all(tasks);
+    await set(ref(db,"game"), {sessionId:String(Date.now()), phase:"lobby", roundIndex:-1, questionIndex:-1});
+    lastQuestionKey = "";
   };
 
-
-  // 정답 보기
-  window.showAnswer = function() {
-
-    if (currentQuestion < 0) return;
-
-    document.getElementById("hostAnswer")
-      .innerText =
-      "정답: " +
-      questions[currentQuestion].a;
-
+  window.startRound = async function(index) {
+    if (index < 0 || index > 3) return;
+    const snap = await get(ref(db,"game"));
+    const old = snap.val() || {};
+    await set(ref(db,"game"), {sessionId:old.sessionId || String(Date.now()), phase:"roundIntro", roundIndex:index, questionIndex:-1});
+    lastQuestionKey = "";
   };
 
+  window.startFirstQuestion = async function() {
+    if (!gameState || gameState.phase !== "roundIntro" || gameState.roundIndex < 0) {
+      alert("먼저 라운드를 시작해주세요."); return;
+    }
+    await beginQuestion(0);
+  };
 
-  // 호스트 모드
-  // 주소 뒤에 ?host 를 붙이면 진행자 화면
- if (
-  window.location.search.includes("host")
-) {
+  async function beginQuestion(index) {
+    const roundIndex = gameState.roundIndex;
+    const round = rounds[roundIndex];
+    if (!round || index < 0 || index >= round.questions.length) return;
+    await set(ref(db,"game"), {...gameState, phase:"question", questionIndex:index});
+    lastQuestionKey = questionKey();
+  }
 
-  hostMode();
+  window.nextQuestion = async function() {
+    if (!gameState || !["question","answer"].includes(gameState.phase)) return;
+    const next = gameState.questionIndex + 1;
+    if (next >= rounds[gameState.roundIndex].questions.length) {
+      alert("10문제가 끝났습니다. 라운드 결과 보기를 눌러주세요.");
+      return;
+    }
+    await beginQuestion(next);
+  };
 
-}
+  window.showAnswer = async function() {
+    if (!gameState || gameState.phase !== "question") return;
+    await update(ref(db,"game"), {phase:"answer"});
+  };
+
+  window.showRoundResult = async function() {
+    if (!gameState || gameState.roundIndex < 0) return;
+    await update(ref(db,"game"), {phase:"roundResult"});
+  };
+
+  window.finishGame = async function() {
+    await update(ref(db,"game"), {phase:"finished"});
+  };
+
+  if (window.location.search.includes("host")) hostMode();
+  $("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") window.joinGame(); });
+  $("answerInput").addEventListener("keydown", e => { if (e.key === "Enter") window.submitAnswer(); });
 </script>
-
 </body>
 </html>
