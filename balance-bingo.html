@@ -358,21 +358,37 @@ function renderRelay(relay){
   const hasQuestion = Number.isInteger(qIndex) && qIndex >= 0 && qIndex < questions.length;
   const currentName = players[relay.currentUid]?.name || "참가자";
 
-  if(!isHost && !finished && hasQuestion && relay.currentAnswer !== undefined && relay.currentAnswer !== null){
-    const cell = $("bingoGrid").querySelector(`[data-index="${qIndex}"]`);
+ 
+  if (!isHost && !finished) {
+    const history = Array.isArray(relay.history) ? relay.history : [];
 
-    if(cell && choices[qIndex] === relay.currentAnswer){
-      cell.classList.add("marked");
+    history.forEach(item => {
+      const index = item.questionIndex;
+      const answer = item.answer;
 
-      const lines = countBingoLines();
-      $("bingoStatus").textContent = `빙고 ${lines}줄 / 목표 2줄`;
-
-      if(lines >= 2 && !$("bingoStatus").dataset.won){
-        $("bingoStatus").dataset.won = "true";
-        $("bingoStatus").textContent = `🎉 빙고 ${lines}줄 완성!`;
-        alert("🎉 빙고 2줄 완성! 축하합니다!");
+      if (
+        Number.isInteger(index) &&
+        index >= 0 &&
+        index < questions.length &&
+        choices[index] === answer
+      ) {
+        const cell = $("bingoGrid").querySelector(`[data-index="${index}"]`);
+        if (cell) cell.classList.add("marked");
       }
+    });
+
+    if (
+      hasQuestion &&
+      relay.currentAnswer !== undefined &&
+      relay.currentAnswer !== null &&
+      choices[qIndex] === relay.currentAnswer
+    ) {
+      const cell = $("bingoGrid").querySelector(`[data-index="${qIndex}"]`);
+      if (cell) cell.classList.add("marked");
     }
+
+    const lines = countBingoLines();
+    $("bingoStatus").textContent = `빙고 ${lines}줄 / 목표 2줄`;
   }
 
   const answer = relay.currentAnswer;
