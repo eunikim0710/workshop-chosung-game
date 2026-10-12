@@ -242,9 +242,18 @@ function renderRelay(relay){
  const currentName=players[relay.currentUid]?.name||"참가자";
   if(!isHost && !relay.finished && relay.currentAnswer!==undefined){
  const cell=$("bingoGrid").querySelector(`[data-index="${qIndex}"]`);
- if(cell && choices[qIndex]===relay.currentAnswer){
+if(cell && choices[qIndex]===relay.currentAnswer){
   cell.classList.add("marked");
- }
+
+  const lines=countBingoLines();
+  $("bingoStatus").textContent=`빙고 ${lines}줄 / 목표 2줄`;
+
+  if(lines>=2 && !$("bingoStatus").dataset.won){
+    $("bingoStatus").dataset.won="true";
+    $("bingoStatus").textContent=`🎉 빙고 ${lines}줄 완성!`;
+    alert("🎉 빙고 2줄 완성! 축하합니다!");
+  }
+}
 }
  const answer=answers[relay.currentUid]?.choices?.[qIndex];
  const answerText=answer===0?"A · "+questions[qIndex]?.[0]:answer===1?"B · "+questions[qIndex]?.[1]:"";
