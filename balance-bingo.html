@@ -284,6 +284,16 @@ updatedAt:Date.now()
  });
  await set(ref(db,"game/status"),"started");
 }
+  async function resetGame(){
+  if(!confirm("참가자 답변은 유지하고 게임만 처음부터 다시 시작할까요?")) return;
+
+  await set(ref(db,"game/relay"),null);
+  await set(ref(db,"game/status"),"waiting");
+
+  $("hostRelay").classList.add("hidden");
+  $("hostMessage").textContent="게임이 초기화됐어요. 참가자 답변은 유지됩니다.";
+  $("startButton").disabled=false;
+}
 async function nextRelay(){
  const snap=await get(ref(db,"game/relay"));
  const relay=snap.val();
