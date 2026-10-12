@@ -98,8 +98,7 @@
 </head>
 <body>
   <main class="container">
-    
-    <section id="hostScreen" class="hidden">
+      <section id="hostScreen" class="hidden">
       <div class="icon">🎯</div>
       <h1>밸런스 릴레이 빙고</h1>
       <p class="description">진행자 화면</p>
@@ -181,8 +180,7 @@
   const auth = getAuth(app);
 const isHost = new URLSearchParams(window.location.search).has("host");
 document.title = isHost ? "밸런스 릴레이 빙고 - 진행자" : "밸런스 릴레이 빙고";
-  
-  if (isHost) {
+    if (isHost) {
     document.getElementById("joinScreen").classList.add("hidden");
     document.getElementById("waitingScreen").classList.add("hidden");
     document.getElementById("hostScreen").classList.remove("hidden");
