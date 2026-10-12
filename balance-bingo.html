@@ -306,8 +306,20 @@ function renderPlayerQuestionChoices(relay){
   }
 }
 
+
 function renderRelay(relay){
-  if(!relay) return;
+  if(!relay){
+    if(!isHost){
+      document.querySelectorAll("#bingoGrid .marked").forEach(cell => {
+        cell.classList.remove("marked");
+      });
+
+      $("bingoStatus").dataset.won = "";
+      $("bingoStatus").textContent = "빙고 0줄 / 목표 2줄";
+    }
+    return;
+  }
+
 
   const finished = relay.finished === true;
   const qIndex = relay.questionIndex;
