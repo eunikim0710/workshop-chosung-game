@@ -607,10 +607,6 @@ user = credential.user;
     }
    });
     
-
-onValue(ref(db, "game/questionRequests"), snapshot => {
-  const processingRequests = new Set();
-
 onValue(ref(db, "game/questionRequests"), snapshot => {
   const requests = snapshot.val() || {};
 
@@ -730,51 +726,25 @@ onValue(ref(db, "game/questionRequests"), snapshot => {
   }
 
 
+
   const playerSnap = await get(ref(db, "players/" + user.uid));
   const answerSnap = await get(ref(db, "answers/" + user.uid));
 
   const savedPlayer = playerSnap.val();
   const savedAnswer = answerSnap.val();
 
+  const savedChoices = savedAnswer
+    ? normalizeChoices(savedAnswer.choices)
+    : null;
+
   if (
     savedPlayer &&
     savedPlayer.submitted === true &&
-    savedAnswer &&
-    const savedChoices = savedAnswer
-  ? normalizeChoices(savedAnswer.choices)
-  : null;
-
-if (
-  savedPlayer &&
-  savedPlayer.submitted === true &&
-  savedChoices &&
-  savedChoices.length === 25
-) {
-  playerName = savedPlayer.name;
-  choices = savedChoices;
-  submitted = true;
-
-  $("welcomeName").textContent = `${playerName}님`;
-  renderBingo();
-  $("playerBingo").classList.remove("hidden");
-  showScreen("waitingScreen");
-
-  onValue(ref(db, "game/status"), snap => {
-    $("waitingText").textContent =
-      snap.val() === "started"
-        ? "게임이 시작됐어요! 아래에서 릴레이 진행을 확인해 주세요."
-        : "진행자가 게임을 시작할 때까지 기다려 주세요.";
-  });
-
-  onValue(ref(db, "game/relay"), snap => {
-    renderRelay(snap.val());
-  });
-
-  return;
-}
+    savedChoices &&
+    savedChoices.length === 25
   ) {
     playerName = savedPlayer.name;
-    choices = savedAnswer.choices;
+    choices = savedChoices;
     submitted = true;
 
     $("welcomeName").textContent = `${playerName}님`;
@@ -783,13 +753,10 @@ if (
     showScreen("waitingScreen");
 
     onValue(ref(db, "game/status"), snap => {
-      if (snap.val() === "started") {
-        $("waitingText").textContent =
-          "게임이 시작됐어요! 아래에서 릴레이 진행을 확인해 주세요.";
-      } else {
-        $("waitingText").textContent =
-          "진행자가 게임을 시작할 때까지 기다려 주세요.";
-      }
+      $("waitingText").textContent =
+        snap.val() === "started"
+          ? "게임이 시작됐어요! 아래에서 릴레이 진행을 확인해 주세요."
+          : "진행자가 게임을 시작할 때까지 기다려 주세요.";
     });
 
     onValue(ref(db, "game/relay"), snap => {
@@ -798,6 +765,8 @@ if (
 
     return;
   }
+
+
 
   showScreen("joinScreen");
   $("joinButton").addEventListener("click",async()=>{
