@@ -280,6 +280,7 @@ function renderPlayerQuestionChoices(relay){
       button.textContent = "선택 요청 중...";
 
       try {
+      ```js
         await set(
           ref(db, "game/questionRequests/" + user.uid),
           {
@@ -289,11 +290,17 @@ function renderPlayerQuestionChoices(relay){
         );
 
         button.textContent = "선택 완료! 진행을 기다려 주세요.";
+        alert("질문 요청이 Firebase에 저장됐어요!");
       } catch(error) {
-        console.error(error);
-        alert("질문 선택에 실패했어요. 다시 시도해 주세요.");
+        console.error("질문 선택 저장 오류:", error);
+        alert(
+          "질문 선택 저장 실패!\n" +
+          "오류 코드: " + (error.code || "확인 불가") +
+          "\n오류 내용: " + error.message
+        );
         renderPlayerQuestionChoices(relay);
       }
+```
     });
 
     area.appendChild(button);
