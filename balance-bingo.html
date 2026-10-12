@@ -213,6 +213,25 @@ function randomItem(items){return items[Math.floor(Math.random()*items.length)]}
 
  $("bingoStatus").textContent="빙고 0줄 / 목표 2줄";
 }
+  function countBingoLines(){
+ const marked=Array.from({length:25},(_,i)=>
+  $("bingoGrid").children[i]?.classList.contains("marked")||false
+ );
+ let lines=0;
+
+ for(let r=0;r<5;r++){
+  if(Array.from({length:5},(_,c)=>marked[r*5+c]).every(Boolean))lines++;
+ }
+
+ for(let c=0;c<5;c++){
+  if(Array.from({length:5},(_,r)=>marked[r*5+c]).every(Boolean))lines++;
+ }
+
+ if(Array.from({length:5},(_,i)=>marked[i*5+i]).every(Boolean))lines++;
+ if(Array.from({length:5},(_,i)=>marked[i*5+(4-i)]).every(Boolean))lines++;
+
+ return lines;
+}
 function questionText(index){
  return index>=0&&index<25?`${index+1}. ${questions[index][0]} vs ${questions[index][1]}`:"";
 }
