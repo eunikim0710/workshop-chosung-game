@@ -280,7 +280,6 @@ function renderPlayerQuestionChoices(relay){
       button.textContent = "선택 요청 중...";
 
       try {
-      ```js
         await set(
           ref(db, "game/questionRequests/" + user.uid),
           {
@@ -300,7 +299,6 @@ function renderPlayerQuestionChoices(relay){
         );
         renderPlayerQuestionChoices(relay);
       }
-```
     });
 
     area.appendChild(button);
