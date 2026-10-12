@@ -220,7 +220,10 @@ function renderQuestions(){
  $("questionCounter").textContent=`선택 ${count} / 25`;
  $("submitButton").disabled=count!==25||submitted;
 }
-function randomItem(items)
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 function normalizeChoices(value) {
   if (Array.isArray(value)) {
     return value;
