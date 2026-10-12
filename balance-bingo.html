@@ -252,39 +252,92 @@ function randomItem(items){return items[Math.floor(Math.random()*items.length)]}
 function questionText(index){
  return index>=0&&index<25?`${index+1}. ${questions[index][0]} vs ${questions[index][1]}`:"";
 }
+
 function renderRelay(relay){
- if(!relay)return;
- const finished=relay.finished===true;
- const qIndex=relay.questionIndex;
- const currentName=players[relay.currentUid]?.name||"참가자";
-  if(!isHost && !relay.finished && relay.currentAnswer!==undefined){
- const cell=$("bingoGrid").querySelector(`[data-index="${qIndex}"]`);
-if(cell && choices[qIndex]===relay.currentAnswer){
-  cell.classList.add("marked");
+  if(!relay) return;
 
-  const lines=countBingoLines();
-  $("bingoStatus").textContent=`빙고 ${lines}줄 / 목표 2줄`;
+  const finished = relay.finished === true;
+  const qIndex = relay.questionIndex;
+  const hasQuestion = Number.isInteger(qIndex) && qIndex >= 0 && qIndex < questions.length;
+  const currentName = players[relay.currentUid]?.name || "참가자";
 
-  if(lines>=2 && !$("bingoStatus").dataset.won){
-    $("bingoStatus").dataset.won="true";
-    $("bingoStatus").textContent=`🎉 빙고 ${lines}줄 완성!`;
-    alert("🎉 빙고 2줄 완성! 축하합니다!");
+  if(!isHost && !finished && hasQuestion && relay.currentAnswer !== undefined && relay.currentAnswer !== null){
+    const cell = $("bingoGrid").querySelector(`[data-index="${qIndex}"]`);
+
+    if(cell && choices[qIndex] === relay.currentAnswer){
+      cell.classList.add("marked");
+
+      const lines = countBingoLines();
+      $("bingoStatus").textContent = `빙고 ${lines}줄 / 목표 2줄`;
+
+      if(lines >= 2 && !$("bingoStatus").dataset.won){
+        $("bingoStatus").dataset.won = "true";
+        $("bingoStatus").textContent = `🎉 빙고 ${lines}줄 완성!`;
+        alert("🎉 빙고 2줄 완성! 축하합니다!");
+      }
+    }
+  }
+
+  const answer = relay.currentAnswer;
+  const answerText = !hasQuestion
+    ? ""
+    : answer === 0
+      ? "A · " + questions[qIndex][0]
+      : answer === 1
+        ? "B · " + questions[qIndex][1]
+        : "";
+
+  const status = finished
+    ? "🎉 모든 질문이 끝났어요!"
+    : `현재 주자: ${currentName}`;
+
+  const questionTextValue = finished
+    ? "게임 종료"
+    : hasQuestion
+      ? questionText(qIndex)
+      : "다음 질문을 선택해 주세요";
+
+  const detail = finished
+    ? "릴레이가 종료되었습니다."
+    : hasQuestion
+      ? `질문 ${qIndex + 1} / ${questions.length}`
+      : "현재 주자가 아직 사용하지 않은 질문을 선택해 주세요.";
+
+  ["hostRelayStatus", "playerRelayStatus"].forEach(id => {
+    $(id).textContent = status;
+  });
+
+  ["hostRelayQuestion", "playerRelayQuestion"].forEach(id => {
+    $(id).textContent = questionTextValue;
+  });
+
+  ["hostRelayAnswer", "playerRelayAnswer"].forEach(id => {
+    $(id).textContent = answerText;
+  });
+
+  ["hostRelayDetail", "playerRelayDetail"].forEach(id => {
+    $(id).textContent = detail;
+  });
+
+  $("hostRelay").classList.toggle("hidden", !isHost);
+  $("playerRelay").classList.toggle("hidden", isHost);
+
+  $("nextButton").disabled = true;
+  $("nextButton").textContent = finished ? "게임 종료" : "질문 선택 방식으로 진행";
+
+  const selectArea = $("playerQuestionSelect");
+  const choicesArea = $("playerQuestionChoices");
+
+  if(selectArea && choicesArea){
+    const isMyTurn = !isHost && !finished && relay.currentUid === user?.uid;
+    selectArea.classList.toggle("hidden", !isMyTurn);
+
+    if(!isMyTurn){
+      choicesArea.replaceChildren();
+    }
   }
 }
-}
- const answer=relay.currentAnswer ?? answers[relay.currentUid]?.choices?.[qIndex];
- const answerText=answer===0?"A · "+questions[qIndex]?.[0]:answer===1?"B · "+questions[qIndex]?.[1]:"";
- const status=finished?"🎉 모든 질문이 끝났어요!":`현재 주자: ${currentName}`;
- const detail=finished?"릴레이가 종료되었습니다.":`질문 ${qIndex+1} / 25 · 다음 버튼을 눌러 릴레이를 진행하세요.`;
- ["hostRelayStatus","playerRelayStatus"].forEach(id=>$(id).textContent=status);
- ["hostRelayQuestion","playerRelayQuestion"].forEach(id=>$(id).textContent=finished?"게임 종료":questionText(qIndex));
- ["hostRelayAnswer","playerRelayAnswer"].forEach(id=>$(id).textContent=finished?"":answerText);
- ["hostRelayDetail","playerRelayDetail"].forEach(id=>$(id).textContent=detail);
- $("hostRelay").classList.toggle("hidden",!isHost);
- $("playerRelay").classList.toggle("hidden",isHost);
- $("nextButton").disabled=finished;
- $("nextButton").textContent=finished?"게임 종료":"다음 릴레이 진행";
-}
+
 
 async function startRelay(){
   const playerEntries = Object.entries(players).filter(
