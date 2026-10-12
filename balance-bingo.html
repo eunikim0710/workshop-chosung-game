@@ -207,7 +207,7 @@ function randomItem(items){return items[Math.floor(Math.random()*items.length)]}
   const cell=document.createElement("div");
   cell.className="bingo-cell";
   cell.dataset.index=i;
-  cell.textContent=`${i+1}. ${q[0]} / ${q[1]}`;
+  cell.textContent=`${i+1}. ${choices[i]===0?"⭕ "+q[0]:choices[i]===1?"⭕ "+q[1]:q[0]+" / "+q[1]}`;
   grid.appendChild(cell);
  });
 
