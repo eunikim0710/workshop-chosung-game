@@ -631,8 +631,49 @@ onValue(ref(db, "game/questionRequests"), snapshot => {
    return;
   }
 
+
+  const playerSnap = await get(ref(db, "players/" + user.uid));
+  const answerSnap = await get(ref(db, "answers/" + user.uid));
+
+  const savedPlayer = playerSnap.val();
+  const savedAnswer = answerSnap.val();
+
+  if (
+    savedPlayer &&
+    savedPlayer.submitted === true &&
+    savedAnswer &&
+    Array.isArray(savedAnswer.choices) &&
+    savedAnswer.choices.length === 25
+  ) {
+    playerName = savedPlayer.name;
+    choices = savedAnswer.choices;
+    submitted = true;
+
+    $("welcomeName").textContent = `${playerName}님`;
+    renderBingo();
+    $("playerBingo").classList.remove("hidden");
+    showScreen("waitingScreen");
+
+    onValue(ref(db, "game/status"), snap => {
+      if (snap.val() === "started") {
+        $("waitingText").textContent =
+          "게임이 시작됐어요! 아래에서 릴레이 진행을 확인해 주세요.";
+      } else {
+        $("waitingText").textContent =
+          "진행자가 게임을 시작할 때까지 기다려 주세요.";
+      }
+    });
+
+    onValue(ref(db, "game/relay"), snap => {
+      renderRelay(snap.val());
+    });
+
+    return;
+  }
+
   showScreen("joinScreen");
   $("joinButton").addEventListener("click",async()=>{
+
    const name=$("playerName").value.trim();
    if(!name){$("message").textContent="이름을 먼저 입력해 주세요.";return;}
    playerName=name;$("joinButton").disabled=true;
