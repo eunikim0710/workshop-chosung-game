@@ -265,6 +265,7 @@ async function nextRelay(){
   const nextUid=randomItem(candidates);
   await update(ref(db,"game/relay"),{
    currentUid:nextUid,visited:used,
+    currentAnswer:answers[nextUid].choices[q],
    moveMessage:`같은 답변을 선택한 참가자에게 릴레이합니다.`,
    updatedAt:Date.now()
   });
