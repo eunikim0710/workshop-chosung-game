@@ -140,7 +140,12 @@ button:disabled{opacity:.45}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getDatabase,ref,set,update,onValue,get} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getAuth,
+  signInAnonymously,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig={
  apiKey:"AIzaSyByHNWVZ0ymrspwOgoG6q2XgXPpPqvRBBc",
@@ -215,7 +220,28 @@ function renderQuestions(){
  $("questionCounter").textContent=`선택 ${count} / 25`;
  $("submitButton").disabled=count!==25||submitted;
 }
-function randomItem(items){return items[Math.floor(Math.random()*items.length)]}
+function randomItem(items)
+function normalizeChoices(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value);
+
+    if (
+      keys.length === 25 &&
+      Array.from({ length: 25 }, (_, i) =>
+        Object.prototype.hasOwnProperty.call(value, String(i))
+      ).every(Boolean)
+    ) {
+      return Array.from({ length: 25 }, (_, i) => value[i]);
+    }
+  }
+
+  return null;
+}
+{return items[Math.floor(Math.random()*items.length)]}
   function renderBingo(){
  const grid=$("bingoGrid");
  grid.replaceChildren();
@@ -289,7 +315,6 @@ function renderPlayerQuestionChoices(relay){
         );
 
         button.textContent = "선택 완료! 진행을 기다려 주세요.";
-        alert("질문 요청이 Firebase에 저장됐어요!");
       } catch(error) {
         console.error("질문 선택 저장 오류:", error);
         alert(
@@ -431,6 +456,7 @@ async function startRelay(){
     currentAnswer: null,
     visited: [],
     usedQuestions: [],
+    history:[],
     moveMessage: "첫 주자가 정해졌어요. 해당 참가자가 질문을 선택해 주세요!",
     updatedAt: Date.now()
   });
@@ -495,8 +521,9 @@ await update(ref(db,"game/relay"),{
 }
 async function startApp(){
  try{
-  const credential=await signInAnonymously(auth);
-  user=credential.user;
+ await setPersistence(auth, browserLocalPersistence);
+const credential = await signInAnonymously(auth);
+user = credential.user;
 
   if(isHost){
    showScreen("hostScreen");
@@ -516,15 +543,36 @@ async function startApp(){
     });
    },e=>errorMessage("hostMessage",e));
 
-   onValue(ref(db,"answers"),snap=>{
-    answers=snap.val()||{};
-    const box=$("answerList");box.replaceChildren();
-    Object.values(answers).forEach(entry=>{
-     const row=document.createElement("div");row.className="player-row";
-     row.textContent=`${entry.name}: `+entry.choices.map((v,i)=>`${i+1}.${v===0?"A":"B"}`).join(" / ");
-     box.appendChild(row);
-    });
-   },e=>errorMessage("hostMessage",e));
+   onValue(ref(db, "answers"), snap => {
+  const rawAnswers = snap.val() || {};
+
+  answers = Object.fromEntries(
+    Object.entries(rawAnswers).map(([uid, entry]) => [
+      uid,
+      {
+        ...entry,
+        choices: normalizeChoices(entry.choices)
+      }
+    ])
+  );
+
+  const box = $("answerList");
+  box.replaceChildren();
+
+  Object.values(answers).forEach(entry => {
+    if (!Array.isArray(entry.choices)) return;
+
+    const row = document.createElement("div");
+    row.className = "player-row";
+    row.textContent =
+      `${entry.name}: ` +
+      entry.choices.map((v, i) =>
+        `${i + 1}.${v === 0 ? "A" : "B"}`
+      ).join(" / ");
+
+    box.appendChild(row);
+  });
+}, e => errorMessage("hostMessage", e));
 
    onValue(ref(db,"game/status"),snap=>{
     if(snap.val()==="started"){
@@ -561,6 +609,9 @@ async function startApp(){
     
 
 onValue(ref(db, "game/questionRequests"), snapshot => {
+  const processingRequests = new Set();
+
+onValue(ref(db, "game/questionRequests"), snapshot => {
   const requests = snapshot.val() || {};
 
   Object.entries(requests).forEach(async ([uid, request]) => {
@@ -568,16 +619,30 @@ onValue(ref(db, "game/questionRequests"), snapshot => {
 
     if (processedQuestionRequests[uid] === request.requestId) return;
 
+    const requestKey = `${uid}_${request.requestId}`;
+    if (processingRequests.has(requestKey)) return;
+
+    processingRequests.add(requestKey);
+
     try {
       const relaySnap = await get(ref(db, "game/relay"));
       const relay = relaySnap.val();
 
-      if (!relay || relay.finished) return;
-      if (relay.currentUid !== uid) return;
+      if (!relay || relay.finished || relay.currentUid !== uid) {
+        continueRequest();
+        return;
+      }
 
       const qIndex = request.questionIndex;
 
-      if (!Number.isInteger(qIndex) || qIndex < 0 || qIndex >= questions.length) return;
+      if (
+        !Number.isInteger(qIndex) ||
+        qIndex < 0 ||
+        qIndex >= questions.length
+      ) {
+        continueRequest();
+        return;
+      }
 
       const usedQuestions = Array.isArray(relay.usedQuestions)
         ? relay.usedQuestions
@@ -585,27 +650,45 @@ onValue(ref(db, "game/questionRequests"), snapshot => {
 
       if (usedQuestions.includes(qIndex)) {
         processedQuestionRequests[uid] = request.requestId;
+        continueRequest();
         return;
       }
 
       const currentAnswer = answers[uid]?.choices?.[qIndex];
 
-      if (currentAnswer !== 0 && currentAnswer !== 1) return;
+      if (currentAnswer !== 0 && currentAnswer !== 1) {
+        continueRequest();
+        return;
+      }
 
       const candidates = Object.keys(answers).filter(otherUid =>
         otherUid !== uid &&
         players[otherUid]?.submitted === true &&
-        answers[otherUid]?.choices?.length === questions.length &&
+        Array.isArray(answers[otherUid]?.choices) &&
+        answers[otherUid].choices.length === 25 &&
         answers[otherUid].choices[qIndex] === currentAnswer
       );
 
-      const nextUid = candidates.length ? randomItem(candidates) : uid;
+      const nextUid = candidates.length
+        ? randomItem(candidates)
+        : uid;
+
+      const history = Array.isArray(relay.history)
+        ? relay.history
+        : [];
 
       await update(ref(db, "game/relay"), {
         questionIndex: qIndex,
         currentUid: nextUid,
         currentAnswer,
         usedQuestions: [...usedQuestions, qIndex],
+        history: [
+          ...history,
+          {
+            questionIndex: qIndex,
+            answer: currentAnswer
+          }
+        ],
         visited: [],
         moveMessage: candidates.length
           ? `${questionText(qIndex)}: 같은 답변을 선택한 참가자에게 릴레이합니다.`
@@ -617,6 +700,12 @@ onValue(ref(db, "game/questionRequests"), snapshot => {
 
     } catch (error) {
       console.error("질문 선택 처리 오류:", error);
+    } finally {
+      processingRequests.delete(`${uid}_${request.requestId}`);
+    }
+
+    function continueRequest() {
+      processingRequests.delete(`${uid}_${request.requestId}`);
     }
   });
 });
@@ -651,8 +740,38 @@ onValue(ref(db, "game/questionRequests"), snapshot => {
     savedPlayer &&
     savedPlayer.submitted === true &&
     savedAnswer &&
-    Array.isArray(savedAnswer.choices) &&
-    savedAnswer.choices.length === 25
+    const savedChoices = savedAnswer
+  ? normalizeChoices(savedAnswer.choices)
+  : null;
+
+if (
+  savedPlayer &&
+  savedPlayer.submitted === true &&
+  savedChoices &&
+  savedChoices.length === 25
+) {
+  playerName = savedPlayer.name;
+  choices = savedChoices;
+  submitted = true;
+
+  $("welcomeName").textContent = `${playerName}님`;
+  renderBingo();
+  $("playerBingo").classList.remove("hidden");
+  showScreen("waitingScreen");
+
+  onValue(ref(db, "game/status"), snap => {
+    $("waitingText").textContent =
+      snap.val() === "started"
+        ? "게임이 시작됐어요! 아래에서 릴레이 진행을 확인해 주세요."
+        : "진행자가 게임을 시작할 때까지 기다려 주세요.";
+  });
+
+  onValue(ref(db, "game/relay"), snap => {
+    renderRelay(snap.val());
+  });
+
+  return;
+}
   ) {
     playerName = savedPlayer.name;
     choices = savedAnswer.choices;
