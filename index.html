@@ -35,6 +35,7 @@
     .host-buttons { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .host-buttons button { margin-top:0; }
     .status { text-align:center; font-size:14px; color:#555; margin-top:8px; }
+    .hint-box { margin-top:12px; padding:13px 14px; border-radius:12px; background:#fff6db; color:#674d00; font-size:16px; line-height:1.5; text-align:center; border:1px solid #f0df9b; }
     .section-label { font-size:13px; color:#777; margin-bottom:6px; }
     @media (max-width:380px) { .container{padding:10px} .card{padding:14px} .host-buttons{grid-template-columns:1fr} }
   </style>
@@ -55,6 +56,7 @@
       <div id="playerBigTitle" class="big-title hidden"></div>
       <div id="playerQuestion" class="question">준비중</div>
       <div id="playerPoints" class="small"></div>
+      <div id="playerHint" class="hint-box hidden" aria-live="polite"></div>
       <input id="answerInput" type="text" placeholder="정답을 입력하세요 (띄어쓰기 없이)" autocomplete="off" disabled>
       <button id="submitButton" onclick="submitAnswer()" disabled>정답 제출</button>
       <div id="submitMessage" class="status" aria-live="polite"></div>
@@ -80,6 +82,7 @@
       <div id="hostBigTitle" class="big-title hidden"></div>
       <div id="hostQuestion" class="question">-</div>
       <div id="hostPoints" class="small"></div>
+      <div id="hostHint" class="hint-box hidden"></div>
       <div id="hostAnswer" class="answer">정답: -</div>
       <div id="winner" class="winner"></div>
       <div class="host-buttons">
@@ -89,6 +92,7 @@
         <button onclick="startRound(2)">🎬 3라운드 시작</button>
         <button onclick="startRound(3)">🍪 보너스 라운드</button>
         <button onclick="startFirstQuestion()">▶ 첫 문제 시작</button>
+        <button onclick="showHint()" class="secondary">💡 힌트 공개</button>
         <button onclick="showAnswer()" class="secondary">👀 정답 공개</button>
         <button onclick="nextQuestion()">다음 문제 ▶</button>
         <button onclick="showRoundResult()" class="secondary">🏆 라운드 결과 보기</button>
@@ -125,32 +129,32 @@
 
   const rounds = [
     { title: "1라운드 · 음식 🍖", name: "음식", questions: [
-      {q:"ㄱㅂㅉ",a:"갈비찜",p:1}, {q:"ㅂㄷㅉㄱ",a:"부대찌개",p:1},
-      {q:"ㅈㅇㅂㅇ",a:"제육볶음",p:1}, {q:"ㅎㅁㅍㅈ",a:"해물파전",p:1},
-      {q:"ㅁㄹㅌ",a:"마라탕",p:1}, {q:"ㄷㄲㅅ",a:"돈까스",p:1},
-      {q:"ㄸㅂㅇ",a:"떡볶이",p:1}, {q:"ㄹㅁ",a:"라면",p:1},
-      {q:"ㅊㅂ",a:"초밥",p:1}, {q:"ㅅㅍㄱㅌ",a:"스파게티",p:1}
+      {q:"ㄱㅂㅉ",a:"갈비찜",p:1,h:"명절이나 특별한 날에 자주 먹는 고기 요리"}, {q:"ㅂㄷㅉㄱ",a:"부대찌개",p:1,h:"햄과 소시지가 들어가는 얼큰한 찌개"},
+      {q:"ㅈㅇㅂㅇ",a:"제육볶음",p:1,h:"고추장 양념에 돼지고기를 볶은 음식"}, {q:"ㅎㅁㅍㅈ",a:"해물파전",p:1,h:"비 오는 날 막걸리와 잘 어울리는 전"},
+      {q:"ㅁㄹㅌ",a:"마라탕",p:1,h:"얼얼하고 매콤한 중국식 국물 요리"}, {q:"ㄷㄲㅅ",a:"돈까스",p:1,h:"튀긴 고기에 소스를 곁들여 먹는 음식"},
+      {q:"ㄸㅂㅇ",a:"떡볶이",p:2,h:"분식집에서 자주 먹는 매콤달콤한 음식"}, {q:"ㄹㅁ",a:"라면",p:1,h:"물을 끓여 간편하게 먹는 대표적인 면 요리"},
+      {q:"ㅊㅂ",a:"초밥",p:2,h:"식초로 간한 밥 위에 생선 등을 올린 음식"}, {q:"ㅅㅍㄱㅌ",a:"스파게티",p:2,h:"토마토나 크림소스를 곁들이는 이탈리아 면 요리"}
     ]},
     { title: "2라운드 · 스포츠 🏅", name: "스포츠", questions: [
-      {q:"ㅂㄷㅁㅌ",a:"배드민턴",p:1}, {q:"ㄹㄷㅊㅈ",a:"리듬체조",p:1},
-      {q:"ㅎㅊㅇㄹㅂ",a:"휠체어럭비",p:2}, {q:"ㅅㅋㄹㅌ",a:"스켈레톤",p:1},
-      {q:"ㅈㄷㄴㅇㄸㄱ",a:"장대높이뛰기",p:2}, {q:"ㅋㄹ",a:"컬링",p:1},
-      {q:"ㅈㅈ",a:"조정",p:1}, {q:"ㅅㅁ",a:"승마",p:1},
-      {q:"ㅅㅋㅅㅋㅂ",a:"스킨스쿠버",p:2}, {q:"ㅇㅌ",a:"요트",p:1}
+      {q:"ㅂㄷㅁㅌ",a:"배드민턴",p:1,h:"라켓으로 셔틀콕을 주고받는 운동"}, {q:"ㄹㄷㅊㅈ",a:"리듬체조",p:1,h:"음악에 맞춰 리본이나 후프 등을 사용하는 체조"},
+      {q:"ㅎㅊㅇㄹㅂ",a:"휠체어럭비",p:2,h:"우리센터 전문체육 종목"}, {q:"ㅅㅋㄹㅌ",a:"스켈레톤",p:1,h:"아이언맨"},
+      {q:"ㅈㄷㄴㅇㄸㄱ",a:"장대높이뛰기",p:2,h:"아이고 높다"}, {q:"ㅋㄹ",a:"컬링",p:1,h:"빙판"},
+      {q:"ㅈㅈ",a:"조정",p:1,h:"노를 저어라"}, {q:"ㅅㅁ",a:"승마",p:1,h:"말"},
+      {q:"ㅅㅋㅅㅋㅂ",a:"스킨스쿠버",p:2,h:"바닷속"}, {q:"ㅌㅋㅂ",a:"테크볼",p:1,h:"탁구와 족구가 합쳐진 종목"}
     ]},
     { title: "3라운드 · 영화·드라마 🎬", name: "영화·드라마", questions: [
-      {q:"ㄱㅅㅊ",a:"기생충",p:1}, {q:"ㅂㅈㄷㅅ",a:"범죄도시",p:1},
-      {q:"ㅇㅈㅇㄱㅇ",a:"오징어게임",p:1}, {q:"ㅇㄱㅅㄴㄴㅈ",a:"왕과사는남자",p:2},
-      {q:"ㅅㅇㅇㅂ",a:"서울의봄",p:1}, {q:"ㅁㅅㅌㅅㅅㅇ",a:"미스터션샤인",p:2},
-      {q:"ㅅㄱㄹㅇㅇㅅㅅㅎ",a:"슬기로운의사생활",p:2}, {q:"ㅇㄷㅎㄹㅇㄱㅍㅍ",a:"응답하라일구팔팔",p:3},
-      {q:"ㅂㅈㅅㅈㄴㅇㅃㄴㄴ",a:"밥잘사주는예쁜누나",p:2}, {q:"ㅈㅇㅇㄱ",a:"전원일기",p:1}
+      {q:"ㄱㅅㅊ",a:"기생충",p:1,h:"봉준호 감독 영화"}, {q:"ㅂㅈㄷㅅ",a:"범죄도시",p:1,h:"마동석"},
+      {q:"ㅇㅈㅇㄱㅇ",a:"오징어게임",p:1,h:"○△□"}, {q:"ㅇㄱㅅㄴㄴㅈ",a:"왕과사는남자",p:2,h:"장항준 감독"},
+      {q:"ㅅㅇㅇㅂ",a:"서울의봄",p:1,h:"실패하면 반역! 성공하면 혁명 아닙니까!"}, {q:"ㅁㅅㅌㅅㅅㅇ",a:"미스터션샤인",p:2,h:"합시다 러브"},
+      {q:"ㅅㄱㄹㅇㅇㅅㅅㅎ",a:"슬기로운의사생활",p:1,h:"조정석, 전미도, 유연석, 정경호, 김대명"}, {q:"ㅇㄷㅎㄹㅇㄱㅍㅍ",a:"응답하라일구팔팔",p:2,h:"정봉이, 덕선이"},
+      {q:"ㅂㅈㅅㅈㄴㅇㅃㄴㄴ",a:"밥잘사주는예쁜누나",p:2,h:"손예진과 정해인"}, {q:"ㅈㅇㅇㄱ",a:"전원일기",p:1,h:"최불암"}
     ]},
     { title: "보너스 라운드 · 과자 🍪", name: "보너스 과자", bonus: true, questions: [
-      {q:"ㅈㄱㅊ",a:"자갈치",p:1}, {q:"ㅋㅊ",a:"콘칩",p:1},
-      {q:"ㅇㅁㅅㅍㅇ",a:"엄마손파이",p:2}, {q:"ㅅㄷㄷㄸㅂㅇ",a:"신당동떡볶이",p:3},
-      {q:"ㅍㅅㅌ",a:"포스틱",p:1}, {q:"ㅂㅊ",a:"빈츠",p:3},
-      {q:"ㅇㅍㄹ",a:"양파링",p:1}, {q:"ㅎㄴㅂㅌㅊ",a:"허니버터칩",p:3},
-      {q:"ㅁㄷㅅ",a:"맛동산",p:4}, {q:"ㅃㄸ",a:"뽀또",p:5}
+      {q:"ㅈㄱㅊ",a:"자갈치",p:2,h:"바삭하고 짭짤한 오징어 모양 과자"}, {q:"ㅋㅊ",a:"콘칩",p:2,h:"옥수수 맛이 나는 바삭한 칩 과자"},
+      {q:"ㅇㅁㅅㅍㅇ",a:"엄마손파이",p:2,h:"겹겹이 바삭한 페이스트리 과자"}, {q:"ㅅㄷㄷㄸㅂㅇ",a:"신당동떡볶이",p:3,h:"매콤달콤한 떡볶이 맛을 본뜬 과자"},
+      {q:"ㅍㅅㅌ",a:"포스틱",p:2,h:"감자를 길쭉한 막대 모양으로 만든 스낵"}, {q:"ㅂㅊ",a:"빈츠",p:3,h:"한쪽에는 초콜릿, 다른 쪽에는 비스킷이 있는 과자"},
+      {q:"ㅇㅍㄹ",a:"양파링",p:3,h:"양파 맛이 나고 동그란 고리 모양인 과자"}, {q:"ㅎㄴㅂㅌㅊ",a:"허니버터칩",p:3,h:"꿀과 버터의 달콤하고 고소한 맛으로 유명해진 감자칩"},
+      {q:"ㅁㄷㅅ",a:"맛동산",p:4,h:"땅콩이 묻어 있고 달콤한 맛이 나는 과자"}, {q:"ㅃㄸ",a:"뽀또",p:5,h:"두 장의 과자 사이에 크림이 들어 있는 샌드 과자"}
     ]}
   ];
 
@@ -224,6 +228,8 @@
     $("playerBigTitle").classList.add("hidden");
     $("playerQuestion").classList.remove("hidden");
     $("playerPoints").textContent = "";
+    $("playerHint").classList.add("hidden");
+    $("playerHint").textContent = "";
     questionInput.disabled = true;
     submitButton.disabled = true;
 
@@ -255,6 +261,10 @@
     } else {
       $("playerRoundLabel").textContent = "진행자가 라운드를 시작할 때까지 기다려주세요.";
       $("playerQuestion").textContent = "준비중";
+    }
+    if (state?.hintShown && q) {
+      $("playerHint").textContent = `💡 힌트: ${q.h || "힌트가 없습니다."}`;
+      $("playerHint").classList.remove("hidden");
     }
     renderMyScore();
   }
@@ -345,6 +355,8 @@
     $("hostQuestion").textContent = "-";
     $("hostAnswer").textContent = "정답: -";
     $("hostPoints").textContent = "";
+    $("hostHint").textContent = "";
+    $("hostHint").classList.add("hidden");
     $("winner").textContent = "";
     $("questionNumber").textContent = "문제 준비";
     if (phase === "roundIntro" && round) {
@@ -375,6 +387,10 @@
     } else {
       $("hostRoundLabel").textContent = "새 게임을 시작하고 참가자를 확인하세요.";
     }
+    if (state?.hintShown && q) {
+      $("hostHint").textContent = `💡 힌트: ${q.h || "힌트가 없습니다."}`;
+      $("hostHint").classList.remove("hidden");
+    }
   }
 
   window.newGame = async function() {
@@ -390,7 +406,7 @@
     if (index < 0 || index > 3) return;
     const snap = await get(ref(db,"game"));
     const old = snap.val() || {};
-    await set(ref(db,"game"), {sessionId:old.sessionId || String(Date.now()), phase:"roundIntro", roundIndex:index, questionIndex:-1});
+    await set(ref(db,"game"), {sessionId:old.sessionId || String(Date.now()), phase:"roundIntro", roundIndex:index, questionIndex:-1, hintShown:false});
     lastQuestionKey = "";
   };
 
@@ -405,7 +421,7 @@
     const roundIndex = gameState.roundIndex;
     const round = rounds[roundIndex];
     if (!round || index < 0 || index >= round.questions.length) return;
-    await set(ref(db,"game"), {...gameState, phase:"question", questionIndex:index});
+    await set(ref(db,"game"), {...gameState, phase:"question", questionIndex:index, hintShown:false});
     lastQuestionKey = questionKey();
   }
 
@@ -417,6 +433,11 @@
       return;
     }
     await beginQuestion(next);
+  };
+
+  window.showHint = async function() {
+    if (!gameState || gameState.phase !== "question") return;
+    await update(ref(db,"game"), {hintShown:true});
   };
 
   window.showAnswer = async function() {
