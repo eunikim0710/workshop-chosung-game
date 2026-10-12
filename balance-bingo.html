@@ -140,31 +140,79 @@
     </section>
   </main>
 
-  <script>
-    const nameInput = document.getElementById("playerName");
-    const joinButton = document.getElementById("joinButton");
-    const message = document.getElementById("message");
+  
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-    joinButton.addEventListener("click", function () {
-      const name = nameInput.value.trim();
+  import {
+    getDatabase,
+    ref,
+    set
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-      if (!name) {
-        message.textContent = "이름을 먼저 입력해 주세요.";
-        nameInput.focus();
-        return;
-      }
+  import {
+    getAuth,
+    signInAnonymously
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyByHNWVZ0ymrspwOgoG6q2XgXPpPqvRBBc",
+    authDomain: "balance-relay-bingo.firebaseapp.com",
+    databaseURL: "https://balance-relay-bingo-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "balance-relay-bingo",
+    storageBucket: "balance-relay-bingo.firebasestorage.app",
+    messagingSenderId: "1088440127318",
+    appId: "1:1088440127318:web:f84331bd766a9957a6d0f7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  const nameInput = document.getElementById("playerName");
+  const joinButton = document.getElementById("joinButton");
+  const message = document.getElementById("message");
+
+  joinButton.addEventListener("click", async () => {
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      message.textContent = "이름을 먼저 입력해 주세요.";
+      nameInput.focus();
+      return;
+    }
+
+    joinButton.disabled = true;
+    message.textContent = "참가 정보를 준비하고 있어요.";
+
+    try {
+      const credential = await signInAnonymously(auth);
+      const playerId = credential.user.uid;
+
+      await set(ref(db, "testConnection/" + playerId), {
+        name: name,
+        joinedAt: Date.now()
+      });
 
       document.getElementById("welcomeName").textContent = name;
       document.getElementById("joinScreen").classList.add("hidden");
       document.getElementById("waitingScreen").classList.remove("hidden");
-    });
+      message.textContent = "";
+    } catch (error) {
+      console.error("Firebase 연결 오류:", error);
+      message.textContent =
+        "저장에 실패했어요. 다음 단계에서 데이터베이스 규칙을 설정할게요.";
+      joinButton.disabled = false;
+    }
+  });
 
-    nameInput.addEventListener("keydown", function (event) {
-      if (event.key === "Enter") {
-        joinButton.click();
-      }
-    });
-  </script>
+  nameInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      joinButton.click();
+    }
+  });
+</script>
+
 </body>
 </html>
 
