@@ -181,7 +181,7 @@ let user=null,playerName="",choices=Array(25).fill(null),submitted=false;
 let players={},answers={},relayListenerStarted=false;
   let usedQuestions=[];
 let selectedQuestionIndex=null;
-
+let processedQuestionRequests = {};
 function showScreen(id){
  ["joinScreen","questionScreen","waitingScreen","hostScreen"].forEach(s=>$(s).classList.add("hidden"));
  $(id).classList.remove("hidden");
@@ -541,6 +541,66 @@ async function startApp(){
      $("startButton").disabled=false;errorMessage("hostMessage",e);
     }
    });
+    
+onValue(ref(db, "game/questionRequests"), snapshot => {
+  const requests = snapshot.val() || {};
+
+  Object.entries(requests).forEach(async ([uid, request]) => {
+    if(!request || request.requestId == null) return;
+    if(processedQuestionRequests[uid] === request.requestId) return;
+
+    processedQuestionRequests[uid] = request.requestId;
+
+    try {
+      const relaySnap = await get(ref(db, "game/relay"));
+      const relay = relaySnap.val();
+
+      if(!relay || relay.finished) return;
+      if(relay.currentUid !== uid) return;
+
+      const qIndex = request.questionIndex;
+
+      if(!Number.isInteger(qIndex) || qIndex < 0 || qIndex >= questions.length) return;
+
+      const usedQuestions = Array.isArray(relay.usedQuestions)
+        ? relay.usedQuestions
+        : [];
+
+      if(usedQuestions.includes(qIndex)) return;
+
+      const currentAnswer = answers[uid]?.choices?.[qIndex];
+
+      if(currentAnswer !== 0 && currentAnswer !== 1) return;
+
+      const candidates = Object.keys(answers).filter(otherUid =>
+        otherUid !== uid &&
+        players[otherUid]?.submitted === true &&
+        answers[otherUid]?.choices?.length === questions.length &&
+        answers[otherUid].choices[qIndex] === currentAnswer
+      );
+
+      const nextUid = candidates.length ? randomItem(candidates) : uid;
+
+      const nextUsedQuestions = [...usedQuestions, qIndex];
+
+      await update(ref(db, "game/relay"), {
+        questionIndex: qIndex,
+        currentUid: nextUid,
+        currentAnswer: currentAnswer,
+        usedQuestions: nextUsedQuestions,
+        visited: [],
+        moveMessage: candidates.length
+          ? `${questionText(qIndex)}: 같은 답변을 선택한 참가자에게 릴레이합니다.`
+          : `${questionText(qIndex)}: 같은 답변을 선택한 사람이 없어 현재 주자가 다음 질문을 선택합니다.`,
+        updatedAt: Date.now()
+      });
+
+    } catch(error) {
+      console.error("질문 선택 처리 오류:", error);
+    }
+  });
+});
+
    $("nextButton").addEventListener("click",async()=>{
     if(user.uid!==HOST_UID){$("hostMessage").textContent="진행자 계정에서만 진행할 수 있어요.";return;}
     $("nextButton").disabled=true;
