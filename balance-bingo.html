@@ -168,7 +168,8 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const auth = getAuth(app);
-
+const isHost = new URLSearchParams(window.location.search).has("host");
+document.title = isHost ? "밸런스 릴레이 빙고 - 진행자" : "밸런스 릴레이 빙고";
   const nameInput = document.getElementById("playerName");
   const joinButton = document.getElementById("joinButton");
   const message = document.getElementById("message");
