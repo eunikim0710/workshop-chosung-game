@@ -240,7 +240,10 @@ async function startRelay(){
  const first=randomItem(playerEntries);
  await set(ref(db,"game/relay"),{
   started:true,finished:false,questionIndex:0,currentUid:first[0],
-  visited:[],moveMessage:"첫 주자가 무작위로 정해졌어요!",updatedAt:Date.now()
+  visited:[],
+currentAnswer:answers[first[0]].choices[0],
+moveMessage:"첫 주자가 무작위로 정해졌어요!",
+updatedAt:Date.now()
  });
  await set(ref(db,"game/status"),"started");
 }
