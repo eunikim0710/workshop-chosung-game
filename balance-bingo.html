@@ -381,14 +381,17 @@ function renderRelay(relay){
   const selectArea = $("playerQuestionSelect");
   const choicesArea = $("playerQuestionChoices");
 
-  if(selectArea && choicesArea){
-    const isMyTurn = !isHost && !finished && relay.currentUid === user?.uid;
-    selectArea.classList.toggle("hidden", !isMyTurn);
+ 
+if(selectArea && choicesArea){
+  const isMyTurn = !isHost && !finished && relay.currentUid === user?.uid;
+  selectArea.classList.toggle("hidden", !isMyTurn);
 
-    if(!isMyTurn){
-      choicesArea.replaceChildren();
-    }
+  if(isMyTurn){
+    renderPlayerQuestionChoices(relay);
+  } else {
+    choicesArea.replaceChildren();
   }
+}
 }
 
 
