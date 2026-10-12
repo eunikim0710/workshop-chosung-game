@@ -379,7 +379,10 @@ async function startApp(){
    try{
     await set(ref(db,"answers/"+user.uid),{name:playerName,choices,submittedAt:Date.now()});
     await update(ref(db,"players/"+user.uid),{submitted:true});
-    submitted=true;showScreen("waitingScreen");
+    submitted=true;
+renderBingo();
+$("playerBingo").classList.remove("hidden");
+showScreen("waitingScreen");
     onValue(ref(db,"game/status"),snap=>{
      if(snap.val()==="started"){
       $("waitingText").textContent="게임이 시작됐어요! 아래에서 릴레이 진행을 확인해 주세요.";
