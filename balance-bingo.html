@@ -315,11 +315,12 @@ async function nextRelay(){
  }
  const available=Object.keys(answers);
  const nextUid=randomItem(available);
- await update(ref(db,"game/relay"),{
+await update(ref(db,"game/relay"),{
   questionIndex:nextQuestion,currentUid:nextUid,visited:[],
+  currentAnswer:answers[nextUid].choices[nextQuestion],
   moveMessage:`같은 답을 선택한 다음 주자가 없어 ${q+1}번 질문을 건너뛰었어요.`,
   updatedAt:Date.now()
- });
+});
 }
 async function startApp(){
  try{
