@@ -255,7 +255,7 @@ if(cell && choices[qIndex]===relay.currentAnswer){
   }
 }
 }
- const answer=answers[relay.currentUid]?.choices?.[qIndex];
+ const answer=relay.currentAnswer ?? answers[relay.currentUid]?.choices?.[qIndex];
  const answerText=answer===0?"A · "+questions[qIndex]?.[0]:answer===1?"B · "+questions[qIndex]?.[1]:"";
  const status=finished?"🎉 모든 질문이 끝났어요!":`현재 주자: ${currentName}`;
  const detail=finished?"릴레이가 종료되었습니다.":`질문 ${qIndex+1} / 25 · 다음 버튼을 눌러 릴레이를 진행하세요.`;
