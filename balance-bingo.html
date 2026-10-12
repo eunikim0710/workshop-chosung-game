@@ -221,6 +221,12 @@ function renderRelay(relay){
  const finished=relay.finished===true;
  const qIndex=relay.questionIndex;
  const currentName=players[relay.currentUid]?.name||"참가자";
+  if(!isHost && !relay.finished && relay.currentAnswer!==undefined){
+ const cell=$("bingoGrid").querySelector(`[data-index="${qIndex}"]`);
+ if(cell && choices[qIndex]===relay.currentAnswer){
+  cell.classList.add("marked");
+ }
+}
  const answer=answers[relay.currentUid]?.choices?.[qIndex];
  const answerText=answer===0?"A · "+questions[qIndex]?.[0]:answer===1?"B · "+questions[qIndex]?.[1]:"";
  const status=finished?"🎉 모든 질문이 끝났어요!":`현재 주자: ${currentName}`;
