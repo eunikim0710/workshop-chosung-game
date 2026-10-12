@@ -542,6 +542,7 @@ async function startApp(){
  await setPersistence(auth, browserLocalPersistence);
 const credential = await signInAnonymously(auth);
 user = credential.user;
+   console.log("현재 로그인 UID:", user.uid, "설정된 진행자 UID:", HOST_UID);
 
   if(isHost){
    showScreen("hostScreen");
