@@ -127,7 +127,7 @@ const questions=[
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 const auth=getAuth(app);
-const isHost=new URLSearchParams(location.search).has("host");
+const isHost = window.location.search.includes("host");
 const $=id=>document.getElementById(id);
 let user=null,playerName="",choices=Array(25).fill(null),submitted=false;
 let players={},answers={},relayListenerStarted=false;
