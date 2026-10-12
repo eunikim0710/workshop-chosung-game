@@ -199,6 +199,20 @@ function renderQuestions(){
  $("submitButton").disabled=count!==25||submitted;
 }
 function randomItem(items){return items[Math.floor(Math.random()*items.length)]}
+  function renderBingo(){
+ const grid=$("bingoGrid");
+ grid.replaceChildren();
+
+ questions.forEach((q,i)=>{
+  const cell=document.createElement("div");
+  cell.className="bingo-cell";
+  cell.dataset.index=i;
+  cell.textContent=`${i+1}. ${q[0]} / ${q[1]}`;
+  grid.appendChild(cell);
+ });
+
+ $("bingoStatus").textContent="빙고 0줄 / 목표 2줄";
+}
 function questionText(index){
  return index>=0&&index<25?`${index+1}. ${questions[index][0]} vs ${questions[index][1]}`:"";
 }
