@@ -98,6 +98,17 @@
 </head>
 <body>
   <main class="container">
+    
+    <section id="hostScreen" class="hidden">
+      <div class="icon">🎯</div>
+      <h1>밸런스 릴레이 빙고</h1>
+      <p class="description">진행자 화면</p>
+      <div class="notice">
+        진행자 화면이 정상적으로 열렸어요!<br>
+        다음 단계에서 25개 질문 관리 기능을 추가할게요.
+      </div>
+    </section>
+
     <section id="joinScreen">
       <div class="icon">🎯</div>
       <h1>밸런스 릴레이 빙고</h1>
@@ -170,6 +181,13 @@
   const auth = getAuth(app);
 const isHost = new URLSearchParams(window.location.search).has("host");
 document.title = isHost ? "밸런스 릴레이 빙고 - 진행자" : "밸런스 릴레이 빙고";
+  
+  if (isHost) {
+    document.getElementById("joinScreen").classList.add("hidden");
+    document.getElementById("waitingScreen").classList.add("hidden");
+    document.getElementById("hostScreen").classList.remove("hidden");
+  }
+
   const nameInput = document.getElementById("playerName");
   const joinButton = document.getElementById("joinButton");
   const message = document.getElementById("message");
