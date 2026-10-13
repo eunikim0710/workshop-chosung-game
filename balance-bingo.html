@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -156,7 +157,6 @@ const firebaseConfig={
  appId:"1:1088440127318:web:f84331bd766a9957a6d0f7"
 };
 
-const HOST_UID="hc0gjyH4EEeMumafK9c1D4K9lhT2";
 const questions=[
 ["🍚 밥","🥖 빵"],["🌊 바다","🏔️ 산"],["☀️ 여름","❄️ 겨울"],
 ["🏠 집콕","🚗 외출"],["🎬 영화관","📺 집에서 영화 보기"],
@@ -542,13 +542,11 @@ async function startApp(){
  await setPersistence(auth, browserLocalPersistence);
 const credential = await signInAnonymously(auth);
 user = credential.user;
-   console.log("현재 로그인 UID:", user.uid, "설정된 진행자 UID:", HOST_UID);
+   console.log("현재 로그인 UID:", user.uid);
 
   if(isHost){
    showScreen("hostScreen");
-   if(user.uid!==HOST_UID){
-    $("hostMessage").textContent="이 핸드폰의 UID: " + user.uid + " / 이 UID를 복사해 진행자 UID 설정에 사용해 주세요.";
-   }
+   $("hostMessage").textContent="공동 진행 모드예요. 진행자 주소에 접속한 참가자는 누구나 게임을 진행하거나 초기화할 수 있어요.";
    onValue(ref(db,"players"),snap=>{
     players=snap.val()||{};
     const list=Object.values(players);
@@ -611,7 +609,6 @@ user = credential.user;
    },e=>errorMessage("hostMessage",e));
 
    $("startButton").addEventListener("click",async()=>{
-    if(user.uid!==HOST_UID){$("hostMessage").textContent="지정된 진행자 계정에서만 시작할 수 있어요.";return;}
     if(!Object.keys(players).length){$("hostMessage").textContent="참가자가 아직 없어요.";return;}
     if(Object.values(players).some(p=>!p.submitted)){
      $("hostMessage").textContent="아직 답변을 제출하지 않은 참가자가 있어요.";return;
@@ -727,7 +724,6 @@ onValue(ref(db, "game/questionRequests"), snapshot => {
 
 
    $("nextButton").addEventListener("click",async()=>{
-    if(user.uid!==HOST_UID){$("hostMessage").textContent="진행자 계정에서만 진행할 수 있어요.";return;}
     $("nextButton").disabled=true;
     try{await nextRelay();}
     catch(e){errorMessage("hostMessage",e);}
