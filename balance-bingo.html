@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -548,7 +547,7 @@ user = credential.user;
   if(isHost){
    showScreen("hostScreen");
    if(user.uid!==HOST_UID){
-    $("hostMessage").textContent="진행자 계정이 달라요. UID를 설정했던 같은 브라우저에서 진행자 화면을 열어 주세요.";
+    $("hostMessage").textContent="이 핸드폰의 UID: " + user.uid + " / 이 UID를 복사해 진행자 UID 설정에 사용해 주세요.";
    }
    onValue(ref(db,"players"),snap=>{
     players=snap.val()||{};
